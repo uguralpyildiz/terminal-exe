@@ -1,1430 +1,1435 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HAL-9000 // TRADING TERMINAL</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BTC/USD Ultimate Terminal (Auto-Pilot Quant Bot)</title>
+	<style>
+		body {
+			background-color: #050507;
+			color: #d1d1d1;
+			font-family: 'SF Mono', 'Courier New', Courier, monospace;
+			margin: 0;
+			padding: 20px;
+			overflow: hidden;
+			box-sizing: border-box;
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+		}
 
-  :root {
-    --bg: #020507;
-    --bg1: #060d10;
-    --bg2: #0a1520;
-    --panel: #0c1a22;
-    --border: #0e3040;
-    --border-bright: #0f5070;
-    --cyan: #00d4ff;
-    --cyan-dim: #007899;
-    --green: #00ff88;
-    --green-dim: #006633;
-    --red: #ff3355;
-    --red-dim: #661122;
-    --amber: #ffaa00;
-    --amber-dim: #664400;
-    --white: #cde8f0;
-    --muted: #3a6070;
-    --grid: rgba(0,212,255,0.04);
-  }
+		#header {
+			display: grid;
+			grid-template-columns: 1fr auto auto;
+			gap: 20px;
+			border-bottom: 1px dashed #333;
+			padding-bottom: 10px;
+			margin-bottom: 10px;
+			flex-shrink: 0;
+			align-items: start;
+		}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+		.header-left {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
 
-  body {
-    background: var(--bg);
-    color: var(--white);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    height: 100vh;
-    overflow: hidden;
-    display: grid;
-    grid-template-rows: 44px 1fr;
-    grid-template-columns: 1fr;
-    background-image:
-      repeating-linear-gradient(0deg, transparent, transparent 39px, var(--grid) 39px, var(--grid) 40px),
-      repeating-linear-gradient(90deg, transparent, transparent 79px, var(--grid) 79px, var(--grid) 80px);
-  }
+		h1 {
+			margin: 0;
+			font-size: 13px;
+			color: #555;
+			font-weight: normal;
+		}
 
-  /* HEADER */
-  #header {
-    grid-row: 1;
-    background: linear-gradient(90deg, var(--bg1), #030f18, var(--bg1));
-    border-bottom: 1px solid var(--border-bright);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  #header::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    animation: scanline 4s linear infinite;
-  }
-  @keyframes scanline {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  .logo {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 13px;
-    letter-spacing: 4px;
-    color: var(--cyan);
-    text-shadow: 0 0 20px var(--cyan);
-  }
-  .logo span { color: var(--red); }
-  #header-price {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--green);
-    text-shadow: 0 0 15px var(--green);
-    letter-spacing: 1px;
-    min-width: 120px;
-  }
-  #header-delta {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    font-weight: 500;
-  }
-  .delta-up   { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-  .delta-down { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red);   }
-  .delta-flat { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+		.price-line {
+			display: flex;
+			align-items: baseline;
+			gap: 20px;
+			margin-top: 5px;
+		}
 
-  #clock-display {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    color: var(--muted);
-    margin-left: auto;
-  }
-  #clock-display span { color: var(--cyan); }
-  .conn-indicator {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--muted);
-    box-shadow: none;
-    transition: all 0.3s;
-  }
-  .conn-indicator.live {
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse 1.5s infinite;
-  }
-  .conn-indicator.error { background: var(--red); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .conn-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+		.main-price {
+			font-size: 64px;
+			font-weight: bold;
+			color: #ffb100;
+			text-shadow: 0 0 20px rgba(255, 177, 0, 0.2);
+			letter-spacing: -1px;
+			transition: color 0.1s;
+		}
 
-  /* MAIN GRID */
-  #main {
-    display: grid;
-    grid-template-columns: 280px 1fr 280px;
-    grid-template-rows: 1fr 180px;
-    gap: 1px;
-    background: var(--border);
-    overflow: hidden;
-  }
+		.sync-label {
+			background-color: #1a1400;
+			color: #ffb100;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-weight: bold;
+			font-size: 11px;
+			border: 1px solid #cc8d00;
+			display: inline-block;
+			letter-spacing: 0.5px;
+		}
 
-  .panel {
-    background: var(--panel);
-    overflow: hidden;
-    position: relative;
-  }
-  .panel-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: var(--cyan-dim);
-    padding: 8px 12px 6px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .panel-title::before {
-    content: '▮';
-    color: var(--cyan);
-    font-size: 7px;
-  }
+		.sync-box {
+			background-color: #0a0a0d;
+			border: 1px solid #00FF41;
+			padding: 10px 15px;
+			border-radius: 8px;
+			box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.1);
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			min-width: 240px;
+		}
 
-  /* LEFT PANEL — EPOCH ENGINE */
-  #panel-epoch {
-    grid-column: 1;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  #epoch-body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+		.sync-title {
+			font-size: 10px;
+			color: #00FF41;
+			letter-spacing: 1px;
+			font-weight: bold;
+			display: flex;
+			justify-content: space-between;
+		}
 
-  .stat-block {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 8px 10px;
-  }
-  .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-bottom: 4px; }
-  .stat-value {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 16px;
-    color: var(--white);
-  }
-  .stat-value.up   { color: var(--green); text-shadow: 0 0 10px var(--green-dim); }
-  .stat-value.down { color: var(--red);   text-shadow: 0 0 10px var(--red-dim); }
-  .stat-value.amber { color: var(--amber); }
+		.sync-title span.pulse {
+			width: 8px;
+			height: 8px;
+			background: #00FF41;
+			border-radius: 50%;
+			box-shadow: 0 0 8px #00FF41;
+			animation: pulse-green 1.5s infinite;
+		}
 
-  .progress-bar-wrap {
-    height: 4px;
-    background: var(--bg);
-    border-radius: 2px;
-    margin-top: 6px;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: var(--cyan);
-    border-radius: 2px;
-    transition: width 0.5s linear;
-    box-shadow: 0 0 6px var(--cyan);
-  }
+		.sync-input-group {
+			display: flex;
+			gap: 5px;
+		}
 
-  /* CALIBRATION */
-  .cal-group { display: flex; flex-direction: column; gap: 5px; }
-  .cal-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; }
-  .cal-input {
-    background: var(--bg);
-    border: 1px solid var(--border-bright);
-    color: var(--cyan);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    padding: 5px 8px;
-    outline: none;
-    width: 100%;
-    border-radius: 1px;
-  }
-  .cal-input:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,212,255,0.2); }
-  .cal-btn {
-    background: transparent;
-    border: 1px solid var(--cyan-dim);
-    color: var(--cyan);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    letter-spacing: 2px;
-    padding: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-    border-radius: 1px;
-  }
-  .cal-btn:hover {
-    background: rgba(0,212,255,0.1);
-    border-color: var(--cyan);
-    box-shadow: 0 0 12px rgba(0,212,255,0.3);
-  }
-  #offset-display {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--amber);
-    padding: 4px 0;
-  }
+		.sync-input-group button.auto-peg {
+			background: #00FF41;
+			color: #000;
+			border: none;
+			padding: 6px 10px;
+			font-weight: bold;
+			cursor: pointer;
+			font-family: 'SF Mono', monospace;
+			border-radius: 3px;
+			width: 100%;
+			transition: 0.2s;
+		}
 
-  /* CENTER — CANVAS */
-  #panel-chart {
-    grid-column: 2;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  #chart-canvas-wrap { flex: 1; position: relative; overflow: hidden; }
-  #chart-canvas { display: block; }
+		.sync-input-group button.auto-peg.active {
+			background: #ffb100;
+			box-shadow: 0 0 10px rgba(255, 177, 0, 0.5);
+		}
 
-  /* RIGHT PANEL — HAL ENGINE */
-  #panel-hal {
-    grid-column: 3;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  #hal-body { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+		.sync-status {
+			font-size: 10px;
+			color: #888;
+			margin-top: 2px;
+		}
 
-  .indicator-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 8px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 1px;
-    border-left: 2px solid var(--muted);
-  }
-  .indicator-row.bull { border-left-color: var(--green); }
-  .indicator-row.bear { border-left-color: var(--red); }
-  .indicator-row.neutral { border-left-color: var(--amber); }
-  .ind-name { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
-  .ind-value { font-family: 'Share Tech Mono', monospace; font-size: 12px; }
-  .ind-signal { font-size: 9px; padding: 1px 5px; border-radius: 1px; }
-  .sig-bull { background: var(--green-dim); color: var(--green); }
-  .sig-bear { background: var(--red-dim);   color: var(--red); }
-  .sig-neutral { background: var(--amber-dim); color: var(--amber); }
+		.timer-box {
+			text-align: right;
+			background-color: #0a0a0d;
+			border: 1px solid #222;
+			padding: 10px 15px;
+			border-radius: 8px;
+			min-width: 170px;
+			box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+		}
 
-  /* PREDICTION BOX */
-  #prediction-box {
-    background: var(--bg);
-    border: 1px solid var(--border-bright);
-    border-radius: 2px;
-    padding: 10px;
-    text-align: center;
-  }
-  #pred-label { font-family: 'Orbitron', sans-serif; font-size: 9px; color: var(--muted); letter-spacing: 3px; margin-bottom: 6px; }
-  #pred-direction {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: 4px;
-  }
-  #pred-confidence { font-size: 10px; color: var(--muted); margin-top: 4px; }
-  #pred-confidence span { color: var(--cyan); font-family: 'Share Tech Mono', monospace; font-size: 14px; }
+		.timer-title {
+			font-size: 10px;
+			color: #666;
+			letter-spacing: 1.5px;
+			margin-bottom: 3px;
+		}
 
-  /* WIN/LOSS */
-  #wl-row {
-    display: flex;
-    gap: 6px;
-  }
-  .wl-box {
-    flex: 1;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    padding: 6px 8px;
-    text-align: center;
-    border-radius: 1px;
-  }
-  .wl-box .wl-n { font-family: 'Share Tech Mono', monospace; font-size: 20px; }
-  .wl-box .wl-l { font-size: 8px; color: var(--muted); letter-spacing: 2px; }
-  .win-n { color: var(--green); }
-  .loss-n { color: var(--red); }
-  .acc-n { color: var(--cyan); }
+		.timer-interval {
+			font-size: 12px;
+			color: #ffb100;
+			font-weight: bold;
+			margin-bottom: 5px;
+			background: #1a1400;
+			display: inline-block;
+			padding: 2px 6px;
+			border-radius: 3px;
+		}
 
-  /* BOTTOM PANELS */
-  #panel-trades {
-    grid-column: 1;
-    grid-row: 2;
-    display: flex;
-    flex-direction: column;
-  }
-  #panel-log {
-    grid-column: 2 / 4;
-    grid-row: 2;
-    display: flex;
-    flex-direction: column;
-  }
+		.timer-display {
+			font-size: 32px;
+			font-weight: bold;
+			color: #FF003C;
+			font-family: 'Courier New', Courier, monospace;
+			text-shadow: 0 0 12px rgba(255, 0, 60, 0.4);
+			margin-bottom: 5px;
+		}
 
-  .log-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 4px 0;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-  }
-  .log-body::-webkit-scrollbar { width: 4px; }
-  .log-body::-webkit-scrollbar-track { background: var(--bg); }
-  .log-body::-webkit-scrollbar-thumb { background: var(--border-bright); }
+		#main-container {
+			display: flex;
+			gap: 15px;
+			flex-grow: 1;
+			min-height: 0;
+		}
 
-  .trade-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 12px;
-    border-bottom: 1px solid rgba(14,48,64,0.5);
-    animation: fadeIn 0.3s ease;
-  }
-  .trade-row .t-price { color: var(--white); }
-  .trade-row .t-qty   { color: var(--muted); }
-  .trade-row .t-time  { color: var(--muted); font-size: 9px; }
-  .trade-buy  .t-price { color: var(--green); }
-  .trade-sell .t-price { color: var(--red); }
+		.left-column {
+			width: 360px;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			flex-shrink: 0;
+			overflow-y: auto;
+			padding-right: 5px;
+		}
 
-  .log-row {
-    display: flex;
-    gap: 10px;
-    padding: 3px 12px;
-    border-bottom: 1px solid rgba(14,48,64,0.3);
-    animation: fadeIn 0.3s ease;
-  }
-  .log-row .lr-time { color: var(--muted); min-width: 60px; }
-  .log-row .lr-epoch { color: var(--amber); min-width: 40px; }
-  .log-row .lr-price { color: var(--white); min-width: 80px; }
-  .log-row .lr-gap { min-width: 70px; }
-  .log-row .lr-outcome { min-width: 60px; font-weight: 500; }
-  .log-row .lr-pred { color: var(--cyan); min-width: 50px; }
-  .log-row .lr-result { min-width: 40px; font-size: 10px; }
-  .lr-up   { color: var(--green); }
-  .lr-down { color: var(--red); }
-  .lr-neut { color: var(--amber); }
-  .lr-win  { background: var(--green-dim); color: var(--green); padding: 1px 4px; border-radius: 1px; }
-  .lr-loss { background: var(--red-dim); color: var(--red); padding: 1px 4px; border-radius: 1px; }
+		.left-column::-webkit-scrollbar {
+			width: 4px;
+		}
 
-  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+		.left-column::-webkit-scrollbar-thumb {
+			background: #333;
+			border-radius: 4px;
+		}
 
-  /* FLASH */
-  .flash-up   { animation: flash-green 0.4s ease; }
-  .flash-down { animation: flash-red   0.4s ease; }
-  @keyframes flash-green { 0%,100%{color:var(--white)} 50%{color:var(--green);text-shadow:0 0 20px var(--green)} }
-  @keyframes flash-red   { 0%,100%{color:var(--white)} 50%{color:var(--red);  text-shadow:0 0 20px var(--red)} }
+		.right-column {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			min-width: 0;
+		}
 
-  /* Epoch status badge */
-  #epoch-status-badge {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 8px;
-    letter-spacing: 2px;
-    padding: 3px 8px;
-    border-radius: 1px;
-    margin-left: auto;
-  }
-  .badge-start  { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-  .badge-active { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid var(--cyan-dim); }
-  .badge-end    { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+		.panel {
+			background-color: #0a0a0d;
+			border: 1px solid #1a1a1a;
+			padding: 12px;
+			border-radius: 8px;
+			display: flex;
+			flex-direction: column;
+			flex-shrink: 0;
+		}
 
-  /* HAL eye */
-  #hal-eye {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, #ff6600, #cc0000 50%, #440000);
-    box-shadow: 0 0 20px rgba(255,0,0,0.5), inset 0 0 8px rgba(0,0,0,0.5);
-    margin: 0 auto 6px;
-    animation: hal-glow 2s infinite;
-  }
-  @keyframes hal-glow {
-    0%,100%{box-shadow:0 0 15px rgba(255,0,0,0.4),inset 0 0 8px rgba(0,0,0,0.5)}
-    50%{box-shadow:0 0 30px rgba(255,80,0,0.7),inset 0 0 12px rgba(0,0,0,0.3)}
-  }
+		.panel-title {
+			font-size: 11px;
+			color: #666;
+			margin-bottom: 8px;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+			display: flex;
+			justify-content: space-between;
+		}
 
-  .section-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-</style>
+		/* PORTFÖY VE OTO-PİLOT KUTUSU */
+		.portfolio-box {
+			background: linear-gradient(180deg, #111 0%, #050507 100%);
+			border: 1px solid #cc8d00;
+			border-radius: 6px;
+			padding: 10px;
+			margin-bottom: 5px;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			position: relative;
+		}
+
+		.balance-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px dashed #333;
+			padding-bottom: 8px;
+		}
+
+		.balance-label {
+			font-size: 11px;
+			color: #888;
+		}
+
+		.balance-value {
+			font-size: 24px;
+			font-weight: bold;
+			color: #00FF41;
+			text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+		}
+
+		.reset-btn {
+			background: #333;
+			color: #aaa;
+			border: 1px solid #444;
+			padding: 3px 6px;
+			font-size: 9px;
+			cursor: pointer;
+			border-radius: 3px;
+		}
+
+		.reset-btn:hover {
+			background: #555;
+			color: #fff;
+		}
+
+		/* OTO-PİLOT ŞALTERİ */
+		.auto-trade-switch {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background: #000;
+			padding: 8px;
+			border-radius: 4px;
+			border: 1px solid #333;
+		}
+
+		.auto-trade-label {
+			font-size: 11px;
+			font-weight: bold;
+			color: #888;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		.auto-trade-label span.indicator {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #444;
+			display: inline-block;
+		}
+
+		.auto-trade-label.active {
+			color: #00FF41;
+		}
+
+		.auto-trade-label.active span.indicator {
+			background: #00FF41;
+			box-shadow: 0 0 8px #00FF41;
+		}
+
+		.toggle-btn {
+			background: #222;
+			color: #fff;
+			border: 1px solid #444;
+			padding: 5px 15px;
+			font-size: 10px;
+			font-weight: bold;
+			cursor: pointer;
+			border-radius: 4px;
+			transition: 0.3s;
+		}
+
+		.toggle-btn.active {
+			background: #00FF41;
+			color: #000;
+			border-color: #00FF41;
+			box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+		}
+
+		.odds-container {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+			margin-top: 5px;
+			text-align: center;
+		}
+
+		.odds-box {
+			background: #000;
+			border: 1px dashed #444;
+			border-radius: 4px;
+			padding: 6px;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.odds-title {
+			font-size: 9px;
+			color: #888;
+		}
+
+		.odds-val {
+			font-size: 16px;
+			font-weight: bold;
+		}
+
+		.odds-val.up {
+			color: #00FF41;
+		}
+
+		.odds-val.down {
+			color: #FF003C;
+		}
+
+		.manual-bet-cover {
+			display: none;
+		}
+
+		.manual-bet-cover.active {
+			display: block;
+		}
+
+		.bet-inputs {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 8px;
+			margin-top: 5px;
+		}
+
+		.bet-input-group {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.bet-input-group label {
+			font-size: 9px;
+			color: #888;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		.bet-input-group input {
+			background: #000;
+			border: 1px solid #333;
+			color: #fff;
+			padding: 8px;
+			font-family: 'SF Mono', monospace;
+			font-size: 14px;
+			outline: none;
+			border-radius: 3px;
+			text-align: center;
+			font-weight: bold;
+		}
+
+		.bet-buttons {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+			margin-top: 5px;
+		}
+
+		.btn-bet {
+			padding: 10px 5px;
+			border: none;
+			border-radius: 4px;
+			font-family: 'SF Mono', monospace;
+			font-weight: bold;
+			cursor: pointer;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 4px;
+			transition: 0.2s;
+		}
+
+		.btn-bet:disabled {
+			opacity: 0.3;
+			cursor: not-allowed;
+		}
+
+		.btn-up {
+			background-color: rgba(0, 255, 65, 0.1);
+			color: #00FF41;
+			border: 1px solid #00FF41;
+		}
+
+		.btn-down {
+			background-color: rgba(255, 0, 60, 0.1);
+			color: #FF003C;
+			border: 1px solid #FF003C;
+		}
+
+		.active-bet-card {
+			background: #1a1400;
+			border: 1px solid #ffb100;
+			padding: 8px;
+			border-radius: 4px;
+			margin-top: 5px;
+			display: none;
+		}
+
+		.active-bet-title {
+			font-size: 10px;
+			color: #ffb100;
+			font-weight: bold;
+			margin-bottom: 5px;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		.active-bet-details {
+			font-size: 11px;
+			color: #ddd;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		.beat-engine-box {
+			background-color: #111;
+			border: 1px solid #333;
+			border-radius: 6px;
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.beat-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.beat-label {
+			font-size: 11px;
+			color: #888;
+		}
+
+		.beat-value {
+			font-size: 14px;
+			font-weight: bold;
+			color: #ffb100;
+		}
+
+		.gap-up {
+			color: #00FF41;
+			font-size: 13px;
+			font-weight: bold;
+			text-shadow: 0 0 5px rgba(0, 255, 65, 0.4);
+		}
+
+		.gap-down {
+			color: #FF003C;
+			font-size: 13px;
+			font-weight: bold;
+			text-shadow: 0 0 5px rgba(255, 0, 60, 0.4);
+		}
+
+		.gap-neutral {
+			color: #888;
+			font-size: 13px;
+			font-weight: bold;
+		}
+
+		#history-logs {
+			flex-grow: 1;
+			overflow-y: auto;
+			font-size: 11px;
+			color: #999;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+			padding-right: 5px;
+			min-height: 150px;
+		}
+
+		.history-entry {
+			background-color: #111;
+			border-left: 3px solid #555;
+			padding: 8px;
+			border-radius: 0 4px 4px 0;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.history-entry.won {
+			border-left-color: #00FF41;
+			background-color: rgba(0, 255, 65, 0.05);
+		}
+
+		.history-entry.lost {
+			border-left-color: #FF003C;
+			background-color: rgba(255, 0, 60, 0.05);
+		}
+
+		.hist-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.hist-time {
+			color: #888;
+			font-size: 10px;
+		}
+
+		/* HAL-9000 STİLLERİ (YENİ ANALİZ METRİKLERİ) */
+		.hal-panel {
+			background: linear-gradient(180deg, #0d0505 0%, #050507 100%);
+			border: 1px solid #FF003C;
+			box-shadow: inset 0 0 20px rgba(255, 0, 60, 0.05);
+			flex-shrink: 0;
+		}
+
+		.hal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px dashed #333;
+			padding-bottom: 5px;
+			margin-bottom: 8px;
+		}
+
+		.hal-title {
+			color: #FF003C;
+			font-weight: bold;
+			font-size: 12px;
+			letter-spacing: 1px;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		.hal-eye {
+			width: 10px;
+			height: 10px;
+			background-color: #FF003C;
+			border-radius: 50%;
+			box-shadow: 0 0 8px #FF003C;
+			animation: pulse 2s infinite;
+		}
+
+		.hal-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 8px;
+			font-size: 9px;
+			color: #aaa;
+			margin-bottom: 10px;
+		}
+
+		.hal-metric {
+			background-color: #111;
+			padding: 6px;
+			border-radius: 4px;
+			border: 1px solid #222;
+			transition: all 0.3s;
+		}
+
+		.hal-metric span {
+			display: block;
+			color: #555;
+			margin-bottom: 3px;
+		}
+
+		.hal-metric strong {
+			font-size: 11px;
+		}
+
+		.hal-prediction-box {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: #000;
+			padding: 10px 12px;
+			border-radius: 4px;
+			border: 1px solid #444;
+			border-left: 4px solid #ffb100;
+		}
+
+		.hal-pred-text {
+			font-size: 11px;
+			color: #888;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.hal-pred-text span.locked-badge {
+			background: #ffb100;
+			color: #000;
+			font-weight: bold;
+			padding: 2px 4px;
+			border-radius: 2px;
+			font-size: 9px;
+			display: inline-block;
+			width: max-content;
+		}
+
+		.hal-pred-value {
+			font-size: 18px;
+			font-weight: bold;
+			text-align: right;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+		}
+
+		.hal-confidence {
+			font-size: 10px;
+			color: #888;
+			font-weight: normal;
+			margin-top: 2px;
+		}
+
+		.hal-pred-up {
+			color: #00FF41;
+			text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+		}
+
+		.hal-pred-down {
+			color: #FF003C;
+			text-shadow: 0 0 8px rgba(255, 0, 60, 0.4);
+		}
+
+		.hal-pred-wait {
+			color: #ffb100;
+		}
+
+		#mum-grafik-container {
+			position: relative;
+			flex-grow: 1;
+			overflow: hidden;
+			border-radius: 4px;
+			background-color: #050507;
+			border: 1px solid #111;
+			min-height: 200px;
+		}
+
+		#mum-grafik-canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		#status {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			font-size: 11px;
+			color: #555;
+			border-top: 1px dashed #222;
+			padding-top: 8px;
+			margin-top: 8px;
+			flex-shrink: 0;
+		}
+
+		.dot {
+			height: 8px;
+			width: 8px;
+			border-radius: 50%;
+			display: inline-block;
+			margin-right: 5px;
+			vertical-align: middle;
+		}
+
+		@keyframes pulse {
+			0% {
+				opacity: 0.6;
+			}
+
+			50% {
+				opacity: 1;
+				box-shadow: 0 0 12px #FF003C;
+			}
+
+			100% {
+				opacity: 0.6;
+			}
+		}
+
+		@keyframes pulse-green {
+			0% {
+				opacity: 0.6;
+			}
+
+			50% {
+				opacity: 1;
+				box-shadow: 0 0 10px #00FF41;
+			}
+
+			100% {
+				opacity: 0.6;
+			}
+		}
+	</style>
 </head>
-<body>
-
-<!-- HEADER -->
-<div id="header">
-  <div class="logo">HAL<span>-9000</span> // BTC TERMINAL</div>
-  <div id="conn-spot"  class="conn-indicator" title="Spot WSS"></div>
-  <div class="conn-label">SPOT</div>
-  <div id="conn-perp"  class="conn-indicator" title="Perp WSS"></div>
-  <div class="conn-label">PERP</div>
-  <div style="width:1px;height:20px;background:var(--border)"></div>
-  <div id="header-price">–––.––</div>
-  <div id="header-delta" class="delta-flat">+0.00%</div>
-  <div style="margin-left:8px;font-size:9px;color:var(--muted)">MARK</div>
-  <div id="mark-price" style="font-family:'Share Tech Mono';font-size:12px;color:var(--amber);margin-left:4px">–––.––</div>
-  <div id="offset-badge" style="font-size:9px;color:var(--muted);margin-left:8px">OFFSET: <span id="offset-val" style="color:var(--amber)">0.00</span></div>
-  <div id="clock-display" style="margin-left:auto">
-    <span id="clock-time">00:00:00</span>
-    <span id="epoch-countdown" style="margin-left:10px;color:var(--muted)">NEXT: –:––</span>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div id="main">
-
-  <!-- LEFT: EPOCH + CALIBRATION -->
-  <div class="panel" id="panel-epoch">
-    <div class="panel-title">
-      EPOCH ENGINE
-      <span id="epoch-status-badge" class="badge-active">ACTIVE</span>
-    </div>
-    <div id="epoch-body">
-
-      <div class="stat-block">
-        <div class="stat-label">EPOCH OPEN (PRICE TO BEAT)</div>
-        <div class="stat-value" id="ptb-display">–––––.––</div>
-      </div>
-
-      <div class="stat-block">
-        <div class="stat-label">CURRENT GAP (ADJUSTED)</div>
-        <div class="stat-value" id="gap-display">0.00</div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" id="epoch-progress" style="width:0%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:3px">
-          <span style="font-size:8px;color:var(--muted)">ELAPSED</span>
-          <span id="elapsed-pct" style="font-size:8px;color:var(--muted)">0%</span>
-        </div>
-      </div>
-
-      <div class="stat-block">
-        <div class="stat-label">POLY-SYNC CALIBRATION</div>
-        <div class="cal-group">
-          <div class="cal-label">TARGET REF PRICE</div>
-          <input class="cal-input" id="target-price-input" type="number" placeholder="e.g. 105000" step="0.01">
-          <button class="cal-btn" id="cal-btn">⟳  SYNC OFFSET</button>
-          <div id="offset-display">OFFSET: <span id="offset-live">+0.00</span></div>
-        </div>
-      </div>
-
-      <div class="stat-block" style="flex:1">
-        <div class="stat-label">LAST 5 OUTCOMES</div>
-        <div id="outcome-mini" style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- CENTER: CHART -->
-  <div class="panel" id="panel-chart">
-    <div class="panel-title">15M OHLCV · BTC/USDT · 32 CANDLES
-      <span style="margin-left:auto;font-size:8px;color:var(--muted)">CANVAS ENGINE v2</span>
-    </div>
-    <div id="chart-canvas-wrap">
-      <canvas id="chart-canvas"></canvas>
-    </div>
-  </div>
-
-  <!-- RIGHT: HAL ENGINE -->
-  <div class="panel" id="panel-hal">
-    <div class="panel-title">HAL-9000 QUANT ENGINE</div>
-    <div id="hal-body">
-
-      <div style="text-align:center;padding:4px 0">
-        <div id="hal-eye"></div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:7px;color:var(--red);letter-spacing:2px">I'M AFRAID I CAN'T DO THAT</div>
-      </div>
-
-      <div id="prediction-box">
-        <div id="pred-label">LOCKED PREDICTION</div>
-        <div id="pred-direction" style="color:var(--muted)">INIT</div>
-        <div id="pred-confidence">CONFIDENCE: <span id="pred-conf-val">–––</span>%</div>
-      </div>
-
-      <div id="wl-row">
-        <div class="wl-box"><div class="wl-n win-n" id="win-count">0</div><div class="wl-l">WINS</div></div>
-        <div class="wl-box"><div class="wl-n loss-n" id="loss-count">0</div><div class="wl-l">LOSSES</div></div>
-        <div class="wl-box"><div class="wl-n acc-n" id="acc-pct">–%</div><div class="wl-l">ACC</div></div>
-      </div>
-
-      <div class="section-divider"></div>
-      <div style="font-size:8px;color:var(--muted);letter-spacing:2px;padding:0 2px">INDICATORS (5M)</div>
-
-      <div class="indicator-row neutral" id="ind-rsi">
-        <div><div class="ind-name">RSI (14)</div><div class="ind-value" id="rsi-val">–.–</div></div>
-        <span class="ind-signal sig-neutral" id="rsi-sig">WAIT</span>
-      </div>
-      <div class="indicator-row neutral" id="ind-macd">
-        <div><div class="ind-name">MACD</div><div class="ind-value" id="macd-val">–.–</div></div>
-        <span class="ind-signal sig-neutral" id="macd-sig">WAIT</span>
-      </div>
-      <div class="indicator-row neutral" id="ind-bb">
-        <div><div class="ind-name">BB %B</div><div class="ind-value" id="bb-val">–.–</div></div>
-        <span class="ind-signal sig-neutral" id="bb-sig">WAIT</span>
-      </div>
-      <div class="indicator-row neutral" id="ind-vol">
-        <div><div class="ind-name">VOL RATIO</div><div class="ind-value" id="vol-val">–.–x</div></div>
-        <span class="ind-signal sig-neutral" id="vol-sig">NORM</span>
-      </div>
-      <div class="indicator-row neutral" id="ind-score">
-        <div><div class="ind-name">COMPOSITE SCORE</div><div class="ind-value" id="score-val">–.–</div></div>
-        <span class="ind-signal sig-neutral" id="score-sig">–</span>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- BOTTOM LEFT: TRADES -->
-  <div class="panel" id="panel-trades">
-    <div class="panel-title">LIVE TRADE FLOW</div>
-    <div class="log-body" id="trade-log"></div>
-  </div>
-
-  <!-- BOTTOM RIGHT: ACTION LOG -->
-  <div class="panel" id="panel-log">
-    <div class="panel-title">EPOCH ACTION LOG · IMMUTABLE RECORD
-      <span id="log-count" style="margin-left:auto;font-size:8px;color:var(--muted)">0 RECORDS</span>
-    </div>
-    <div class="log-body" id="action-log">
-      <div class="log-row" style="opacity:0.4">
-        <span class="lr-time">HH:MM:SS</span>
-        <span class="lr-epoch" style="color:var(--muted)">EPOCH</span>
-        <span class="lr-price" style="color:var(--muted)">OPEN</span>
-        <span class="lr-price" style="color:var(--muted)">CLOSE</span>
-        <span class="lr-gap" style="color:var(--muted)">GAP</span>
-        <span class="lr-outcome" style="color:var(--muted)">RESULT</span>
-        <span class="lr-pred" style="color:var(--muted)">PRED</span>
-        <span class="lr-result" style="color:var(--muted)">EVAL</span>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<script>
-'use strict';
-
-// ─── GLOBAL STATE ────────────────────────────────────────────────────────────
-/** @type {number} */
-let globalOffset = 0;
-/** @type {number} */
-let rawMarkPrice = 0;
-/** @type {number} */
-let rawSpotPrice = 0;
-/** @type {number} */
-let adjustedPrice = 0;
-/** @type {number} */
-let prevAdjustedPrice = 0;
-/** @type {number} */
-let openPrice24h = 0;
-
-// Epoch state machine
-const EPOCH_STATE = { IDLE: 'IDLE', ACTIVE: 'ACTIVE' };
-/** @type {string} */
-let epochState = EPOCH_STATE.IDLE;
-/** @type {number} */
-let priceToBeat = 0;
-/** @type {number} */
-let epochStartTime = 0;
-/** @type {number} */
-let epochN = 0;
-/** @type {{ direction: number, confidence: number } | null} */
-let lockedPrediction = null;
-
-// Win/Loss tracker
-const wlTracker = { wins: 0, losses: 0, total: 0 };
-
-// Action log (immutable append-only)
-/** @type {Array<Object>} */
-const actionLog = [];
-
-// 15m candle data
-/** @type {Array<{t:number,o:number,h:number,l:number,c:number,v:number}>} */
-let candles15m = [];
-
-// 5m candle data for HAL
-/** @type {Array<{t:number,o:number,h:number,l:number,c:number,v:number}>} */
-let candles5m = [];
-
-// Trade feed buffer (max 30)
-/** @type {Array<{price:number,qty:number,side:string,time:number}>} */
-let tradeBuffer = [];
-
-// HAL frozen indicators (locked at epoch start)
-let frozenIndicators = null;
-
-// WebSocket handles
-let wsSpot = null;
-let wsPerp = null;
-
-// Canvas
-const canvas = document.getElementById('chart-canvas');
-const ctx = canvas.getContext('2d');
-
-// ─── PRICE TRANSFORM (O(1)) ───────────────────────────────────────────────
-/**
- * Apply global offset to any raw price. O(1).
- * @param {number} raw
- * @returns {number}
- */
-const applyOffset = raw => raw + globalOffset;
-
-// ─── MATH LIBRARY ────────────────────────────────────────────────────────────
-
-/**
- * RSI using Wilder's Smoothing (period=14)
- * @param {number[]} closes
- * @param {number} period
- * @returns {number}
- */
-function calcRSI(closes, period = 14) {
-  if (closes.length < period + 1) return 50;
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const d = closes[i] - closes[i - 1];
-    if (d > 0) gains += d; else losses -= d;
-  }
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  for (let i = period + 1; i < closes.length; i++) {
-    const d = closes[i] - closes[i - 1];
-    const g = d > 0 ? d : 0;
-    const l = d < 0 ? -d : 0;
-    avgGain = (avgGain * (period - 1) + g) / period;
-    avgLoss = (avgLoss * (period - 1) + l) / period;
-  }
-  if (avgLoss === 0) return 100;
-  const rs = avgGain / avgLoss;
-  return 100 - (100 / (1 + rs));
-}
-
-/**
- * EMA
- * @param {number[]} data
- * @param {number} period
- * @returns {number[]}
- */
-function calcEMA(data, period) {
-  if (data.length < period) return data.map(() => data[0] || 0);
-  const k = 2 / (period + 1);
-  const result = new Array(data.length);
-  let sum = 0;
-  for (let i = 0; i < period; i++) sum += data[i];
-  result[period - 1] = sum / period;
-  for (let i = period; i < data.length; i++) {
-    result[i] = data[i] * k + result[i - 1] * (1 - k);
-  }
-  for (let i = 0; i < period - 1; i++) result[i] = result[period - 1];
-  return result;
-}
-
-/**
- * MACD (12, 26, 9)
- * @param {number[]} closes
- * @returns {{macd:number, signal:number, hist:number}}
- */
-function calcMACD(closes) {
-  if (closes.length < 35) return { macd: 0, signal: 0, hist: 0 };
-  const ema12 = calcEMA(closes, 12);
-  const ema26 = calcEMA(closes, 26);
-  const macdLine = ema12.map((v, i) => v - ema26[i]);
-  const signalLine = calcEMA(macdLine.slice(25), 9);
-  const lastIdx = closes.length - 1;
-  const macdVal = macdLine[lastIdx];
-  const sigVal = signalLine[signalLine.length - 1];
-  return { macd: macdVal, signal: sigVal, hist: macdVal - sigVal };
-}
-
-/**
- * Bollinger Bands (20, 2)
- * @param {number[]} closes
- * @returns {{upper:number, middle:number, lower:number, pctB:number, squeeze:boolean}}
- */
-function calcBB(closes) {
-  const period = 20;
-  if (closes.length < period) return { upper: 0, middle: 0, lower: 0, pctB: 0.5, squeeze: false };
-  const slice = closes.slice(-period);
-  const mean = slice.reduce((a, b) => a + b, 0) / period;
-  const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / period;
-  const std = Math.sqrt(variance);
-  const upper = mean + 2 * std;
-  const lower = mean - 2 * std;
-  const last = closes[closes.length - 1];
-  const pctB = (upper - lower) > 0 ? (last - lower) / (upper - lower) : 0.5;
-  const squeeze = (std / mean) < 0.005;
-  return { upper, middle: mean, lower, pctB, squeeze };
-}
-
-/**
- * Volume anomaly: current vol vs 10-period SMA vol
- * @param {number[]} volumes
- * @returns {number} ratio
- */
-function calcVolAnomaly(volumes) {
-  if (volumes.length < 11) return 1;
-  const smaVols = volumes.slice(-11, -1);
-  const sma = smaVols.reduce((a, b) => a + b, 0) / 10;
-  if (sma === 0) return 1;
-  return volumes[volumes.length - 1] / sma;
-}
-
-// ─── HAL COMPOSITE SCORING ENGINE ────────────────────────────────────────────
-/**
- * Run weighted composite scoring on 5m candles.
- * @returns {{ direction: number, confidence: number, indicators: Object }}
- */
-function runHALEngine() {
-  if (candles5m.length < 35) return { direction: 0, confidence: 50, indicators: {} };
-
-  const closes  = candles5m.map(c => c.c);
-  const volumes = candles5m.map(c => c.v);
-
-  const rsi       = calcRSI(closes);
-  const macd      = calcMACD(closes);
-  const bb        = calcBB(closes);
-  const volRatio  = calcVolAnomaly(volumes);
-
-  // ── RSI signal (weight 25%) ──
-  let rsiScore = 0;
-  if (rsi < 30)      rsiScore = 1;    // oversold → bullish
-  else if (rsi > 70) rsiScore = -1;   // overbought → bearish
-  else if (rsi > 50) rsiScore = 0.3;
-  else               rsiScore = -0.3;
-  const rsiWeight = 0.25;
-
-  // ── MACD crossover (weight 20%) ──
-  let macdScore = 0;
-  if (macd.hist > 0 && macd.macd > macd.signal) macdScore = 1;
-  else if (macd.hist < 0 && macd.macd < macd.signal) macdScore = -1;
-  else macdScore = macd.hist > 0 ? 0.4 : -0.4;
-  const macdWeight = 0.20;
-
-  // ── BB squeeze / position (weight 25%) ──
-  let bbScore = 0;
-  if (bb.squeeze) bbScore = 0; // coiled, no direction bias
-  else if (bb.pctB < 0.2)  bbScore = 1;   // near lower → bounce
-  else if (bb.pctB > 0.8)  bbScore = -1;  // near upper → fade
-  else bbScore = (bb.pctB - 0.5) * -1.5;  // linear mapping
-  const bbWeight = 0.25;
-
-  // ── S/R proximity (weight 15%) — use round numbers ──
-  const last = closes[closes.length - 1];
-  const roundLevel = Math.round(last / 1000) * 1000;
-  const dist = Math.abs(last - roundLevel) / last;
-  let srScore = 0;
-  if (dist < 0.002) srScore = last > roundLevel ? -0.5 : 0.5;
-  const srWeight = 0.15;
-
-  // ── Volume (weight 15%) ──
-  let volScore = 0;
-  if (volRatio > 1.5) {
-    // high volume confirms momentum
-    const recentClose = closes[closes.length - 1];
-    const prevClose   = closes[closes.length - 2];
-    volScore = recentClose > prevClose ? 1 : -1;
-  }
-  const volWeight = 0.15;
-
-  const rawScore =
-    rsiScore  * rsiWeight  +
-    macdScore * macdWeight +
-    bbScore   * bbWeight   +
-    srScore   * srWeight   +
-    volScore  * volWeight;
-
-  // Normalize to [-1, 1]
-  const maxScore = rsiWeight + macdWeight + bbWeight + srWeight + volWeight; // =1
-  const normalized = Math.max(-1, Math.min(1, rawScore / maxScore));
-
-  // Direction
-  let direction = 0;
-  if (normalized > 0.15)       direction = 1;
-  else if (normalized < -0.15) direction = -1;
-
-  // Confidence: map |normalized| → [50, 97]
-  const confidence = Math.round(50 + Math.abs(normalized) * 47);
-
-  return {
-    direction,
-    confidence,
-    indicators: { rsi, macd, bb, volRatio, rawScore: normalized }
-  };
-}
-
-// ─── EPOCH STATE MACHINE ──────────────────────────────────────────────────────
-
-function triggerEpochStart() {
-  priceToBeat   = applyOffset(rawSpotPrice);
-  epochStartTime = Date.now();
-  epochState     = EPOCH_STATE.ACTIVE;
-  epochN++;
-
-  // Run HAL and lock prediction
-  const result = runHALEngine();
-  lockedPrediction = { direction: result.direction, confidence: result.confidence };
-  frozenIndicators = result.indicators;
-
-  updateHALUI(result.indicators);
-  updatePredictionUI();
-  updateEpochBadge('ACTIVE');
-  console.log(`[EPOCH ${epochN} START] PTB=${priceToBeat.toFixed(2)} PRED=${lockedPrediction.direction} CONF=${lockedPrediction.confidence}%`);
-}
-
-function triggerEpochEnd() {
-  if (epochState !== EPOCH_STATE.ACTIVE) return;
-  const closingPrice = applyOffset(rawSpotPrice);
-  const gap = closingPrice - priceToBeat;
-  const outcome = gap > 1 ? 'UP' : gap < -1 ? 'DOWN' : 'NEUTRAL';
-  const outcomeDir = gap > 1 ? 1 : gap < -1 ? -1 : 0;
-
-  // Evaluate prediction
-  let evalResult = '–';
-  if (lockedPrediction && lockedPrediction.direction !== 0) {
-    if (lockedPrediction.direction === outcomeDir) {
-      evalResult = 'WIN';
-      wlTracker.wins++;
-    } else {
-      evalResult = 'LOSS';
-      wlTracker.losses++;
-    }
-    wlTracker.total++;
-  }
-
-  // Immutable log
-  const record = Object.freeze({
-    n:         epochN,
-    time:      new Date().toTimeString().slice(0, 8),
-    open:      priceToBeat,
-    close:     closingPrice,
-    gap:       gap,
-    outcome:   outcome,
-    prediction: lockedPrediction ? lockedPrediction.direction : 0,
-    confidence: lockedPrediction ? lockedPrediction.confidence : 0,
-    eval:      evalResult
-  });
-  actionLog.push(record);
-
-  updateActionLog(record);
-  updateWLUI();
-  updateOutcomeMini(outcome);
-  updateEpochBadge('END');
-
-  epochState = EPOCH_STATE.IDLE;
-
-  // Immediately trigger next epoch start (the clock tick will do this naturally)
-}
-
-// ─── CLOCK / CRON ─────────────────────────────────────────────────────────────
-
-let lastMinute = -1;
-let lastMinuteMod5 = -1;
-
-function clockTick() {
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
-
-  // Update clock display
-  document.getElementById('clock-time').textContent =
-    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-  // Epoch countdown
-  const secsIntoEpoch = (m % 5) * 60 + s;
-  const secsLeft = 300 - secsIntoEpoch;
-  const cMin = Math.floor(secsLeft / 60);
-  const cSec = secsLeft % 60;
-  document.getElementById('epoch-countdown').textContent =
-    `NEXT: ${cMin}:${String(cSec).padStart(2,'0')}`;
-
-  // Progress bar
-  const pct = Math.min(100, (secsIntoEpoch / 300) * 100);
-  document.getElementById('epoch-progress').style.width = pct.toFixed(1) + '%';
-  document.getElementById('elapsed-pct').textContent = pct.toFixed(0) + '%';
-
-  // EPOCH_START trigger
-  if (m % 5 === 0 && s === 0) {
-    const epochKey = h * 60 + m;
-    if (epochKey !== lastMinuteMod5) {
-      lastMinuteMod5 = epochKey;
-      if (epochState === EPOCH_STATE.ACTIVE) {
-        triggerEpochEnd();
-      }
-      setTimeout(triggerEpochStart, 50);
-      updateEpochBadge('START');
-    }
-  }
-
-  // Update gap display if active
-  if (epochState === EPOCH_STATE.ACTIVE && priceToBeat > 0) {
-    const gap = adjustedPrice - priceToBeat;
-    const gapEl = document.getElementById('gap-display');
-    gapEl.textContent = (gap >= 0 ? '+' : '') + gap.toFixed(2);
-    gapEl.className = 'stat-value ' + (gap > 0 ? 'up' : gap < 0 ? 'down' : '');
-  }
-}
-
-setInterval(clockTick, 1000);
-
-// ─── WEBSOCKET CONNECTIONS ─────────────────────────────────────────────────────
-
-function connectPerpWSS() {
-  wsPerp = new WebSocket('wss://dstream.binance.com/stream?streams=btcusd_perp@markPrice@1s');
-  wsPerp.onopen  = () => setConn('perp', 'live');
-  wsPerp.onclose = () => { setConn('perp', 'off'); setTimeout(connectPerpWSS, 3000); };
-  wsPerp.onerror = () => setConn('perp', 'error');
-  wsPerp.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    const d = msg.data || msg;
-    if (d.p) {
-      rawMarkPrice = parseFloat(d.p);
-      const adj = applyOffset(rawMarkPrice);
-      document.getElementById('mark-price').textContent = adj.toFixed(2);
-    }
-  };
-}
-
-function connectSpotWSS() {
-  wsSpot = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@trade/btcusdt@kline_15m/btcusdt@kline_5m');
-  wsSpot.onopen  = () => setConn('spot', 'live');
-  wsSpot.onclose = () => { setConn('spot', 'off'); setTimeout(connectSpotWSS, 3000); };
-  wsSpot.onerror = () => setConn('spot', 'error');
-  wsSpot.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    const stream = msg.stream || '';
-    const d = msg.data || msg;
-
-    if (stream.includes('@trade')) {
-      handleTrade(d);
-    } else if (stream.includes('@kline_15m')) {
-      handleKline15m(d.k);
-    } else if (stream.includes('@kline_5m')) {
-      handleKline5m(d.k);
-    }
-  };
-}
-
-function setConn(which, state) {
-  const el = document.getElementById('conn-' + which);
-  el.className = 'conn-indicator ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
-}
-
-// ─── STREAM HANDLERS ──────────────────────────────────────────────────────────
-
-function handleTrade(d) {
-  const raw = parseFloat(d.p);
-  const qty = parseFloat(d.q);
-  const side = d.m ? 'sell' : 'buy'; // m=true means maker=sell side
-
-  // Apply offset O(1)
-  const adj = applyOffset(raw);
-  rawSpotPrice = raw;
-  prevAdjustedPrice = adjustedPrice;
-  adjustedPrice = adj;
-
-  // Update header price
-  const headerEl = document.getElementById('header-price');
-  headerEl.textContent = adj.toFixed(2);
-  if (adj > prevAdjustedPrice) headerEl.className = 'flash-up';
-  else if (adj < prevAdjustedPrice) headerEl.className = 'flash-down';
-  setTimeout(() => headerEl.className = '', 400);
-
-  // Header delta vs 24h open
-  if (openPrice24h > 0) {
-    const pct = ((adj - applyOffset(openPrice24h)) / applyOffset(openPrice24h)) * 100;
-    const deltaEl = document.getElementById('header-delta');
-    deltaEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-    deltaEl.className = 'delta-' + (pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat');
-  }
-
-  // Trade feed
-  tradeBuffer.unshift({ price: adj, qty, side, time: d.T });
-  if (tradeBuffer.length > 30) tradeBuffer.pop();
-  renderTradeFeed();
-}
-
-function handleKline15m(k) {
-  const candle = {
-    t: k.t,
-    o: parseFloat(k.o),
-    h: parseFloat(k.h),
-    l: parseFloat(k.l),
-    c: parseFloat(k.c),
-    v: parseFloat(k.v)
-  };
-  const last = candles15m[candles15m.length - 1];
-  if (last && last.t === candle.t) {
-    candles15m[candles15m.length - 1] = candle;
-  } else {
-    candles15m.push(candle);
-    if (candles15m.length > 32) candles15m.shift();
-  }
-  drawChart();
-}
-
-function handleKline5m(k) {
-  const candle = {
-    t: k.t,
-    o: parseFloat(k.o),
-    h: parseFloat(k.h),
-    l: parseFloat(k.l),
-    c: parseFloat(k.c),
-    v: parseFloat(k.v)
-  };
-  const last = candles5m[candles5m.length - 1];
-  if (last && last.t === candle.t) {
-    candles5m[candles5m.length - 1] = candle;
-  } else {
-    candles5m.push(candle);
-    if (candles5m.length > 50) candles5m.shift();
-  }
-  // Update live indicators (not frozen)
-  if (epochState !== EPOCH_STATE.ACTIVE) {
-    const result = runHALEngine();
-    updateHALUI(result.indicators);
-  }
-}
-
-// ─── REST API INIT ─────────────────────────────────────────────────────────────
-
-async function fetchInit() {
-  try {
-    // 15m candles
-    const r15 = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=32');
-    const d15 = await r15.json();
-    candles15m = d15.map(c => ({
-      t: c[0], o: parseFloat(c[1]), h: parseFloat(c[2]),
-      l: parseFloat(c[3]), c: parseFloat(c[4]), v: parseFloat(c[5])
-    }));
-    drawChart();
-
-    // 5m candles
-    const r5 = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=50');
-    const d5 = await r5.json();
-    candles5m = d5.map(c => ({
-      t: c[0], o: parseFloat(c[1]), h: parseFloat(c[2]),
-      l: parseFloat(c[3]), c: parseFloat(c[4]), v: parseFloat(c[5])
-    }));
-
-    // 24h ticker for open price
-    const r24 = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-    const d24 = await r24.json();
-    openPrice24h = parseFloat(d24.openPrice);
-    rawSpotPrice = parseFloat(d24.lastPrice);
-    adjustedPrice = applyOffset(rawSpotPrice);
-
-    // Initial HAL run
-    const result = runHALEngine();
-    updateHALUI(result.indicators);
-
-  } catch (err) {
-    console.error('REST init failed:', err);
-  }
-}
-
-// ─── CANVAS RENDERING ENGINE ──────────────────────────────────────────────────
-
-function drawChart() {
-  const wrap = document.getElementById('chart-canvas-wrap');
-  const W = wrap.clientWidth;
-  const H = wrap.clientHeight;
-  canvas.width  = W;
-  canvas.height = H;
-
-  if (!W || !H || candles15m.length < 2) return;
-
-  const PAD_TOP    = 30;
-  const PAD_BOTTOM = 36;
-  const PAD_LEFT   = 10;
-  const PAD_RIGHT  = 56;
-
-  const chartW = W - PAD_LEFT - PAD_RIGHT;
-  const chartH = H - PAD_TOP - PAD_BOTTOM;
-
-  // Apply offset dynamically (do NOT mutate dataset)
-  const visible = candles15m.map(c => ({
-    t: c.t,
-    o: c.o + globalOffset,
-    h: c.h + globalOffset,
-    l: c.l + globalOffset,
-    c: c.c + globalOffset,
-    v: c.v
-  }));
-
-  // Dynamic Y bounds with 5% padding
-  const allPrices = visible.flatMap(c => [c.h, c.l]);
-  const minP = Math.min(...allPrices);
-  const maxP = Math.max(...allPrices);
-  const priceRange = maxP - minP;
-  const padPx = priceRange * 0.05;
-  const yMin = minP - padPx;
-  const yMax = maxP + padPx;
-
-  const priceToY = p => PAD_TOP + chartH - ((p - yMin) / (yMax - yMin)) * chartH;
-
-  const totalCandles = visible.length;
-  const candleW = chartW / totalCandles;
-  const bodyW   = Math.max(2, candleW * 0.6);
-
-  // ── Background ──
-  ctx.fillStyle = '#060d10';
-  ctx.fillRect(0, 0, W, H);
-
-  // ── Grid lines ──
-  ctx.strokeStyle = 'rgba(14,48,64,0.6)';
-  ctx.lineWidth = 1;
-  const gridCount = 6;
-  for (let i = 0; i <= gridCount; i++) {
-    const price = yMin + (yMax - yMin) * (i / gridCount);
-    const y = priceToY(price);
-    ctx.beginPath();
-    ctx.setLineDash([3, 6]);
-    ctx.moveTo(PAD_LEFT, y);
-    ctx.lineTo(W - PAD_RIGHT, y);
-    ctx.stroke();
-
-    // Price label
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#3a6070';
-    ctx.font = '9px IBM Plex Mono';
-    ctx.textAlign = 'right';
-    ctx.fillText(price.toFixed(0), W - 4, y + 3);
-  }
-  ctx.setLineDash([]);
-
-  // ── Candles ──
-  for (let i = 0; i < visible.length; i++) {
-    const c = visible[i];
-    const x = PAD_LEFT + i * candleW + candleW / 2;
-    const xBody = x - bodyW / 2;
-
-    const yOpen  = priceToY(c.o);
-    const yClose = priceToY(c.c);
-    const yHigh  = priceToY(c.h);
-    const yLow   = priceToY(c.l);
-
-    const isBull = c.c >= c.o;
-    const bodyColor = isBull ? '#00ff88' : '#ff3355';
-    const bodyAlpha = isBull ? 'rgba(0,255,136,0.85)' : 'rgba(255,51,85,0.85)';
-    const wickColor = isBull ? 'rgba(0,255,136,0.5)' : 'rgba(255,51,85,0.5)';
-
-    // Wick
-    ctx.strokeStyle = wickColor;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, yHigh);
-    ctx.lineTo(x, yLow);
-    ctx.stroke();
-
-    // Body
-    const bodyTop    = Math.min(yOpen, yClose);
-    const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
-
-    ctx.fillStyle = bodyAlpha;
-    ctx.fillRect(xBody, bodyTop, bodyW, bodyHeight);
-
-    // Body border
-    ctx.strokeStyle = bodyColor;
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(xBody, bodyTop, bodyW, bodyHeight);
-  }
-
-  // ── Current price line ──
-  if (adjustedPrice > 0) {
-    const y = priceToY(adjustedPrice);
-    ctx.strokeStyle = 'rgba(0,212,255,0.7)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(PAD_LEFT, y);
-    ctx.lineTo(W - PAD_RIGHT, y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Price tag
-    ctx.fillStyle = '#00d4ff';
-    ctx.fillRect(W - PAD_RIGHT + 2, y - 8, PAD_RIGHT - 4, 14);
-    ctx.fillStyle = '#020507';
-    ctx.font = 'bold 8px IBM Plex Mono';
-    ctx.textAlign = 'center';
-    ctx.fillText(adjustedPrice.toFixed(0), W - PAD_RIGHT / 2, y + 3);
-  }
-
-  // ── PTB line ──
-  if (priceToBeat > 0 && epochState === EPOCH_STATE.ACTIVE) {
-    const y = priceToY(priceToBeat);
-    ctx.strokeStyle = 'rgba(255,170,0,0.6)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 4]);
-    ctx.beginPath();
-    ctx.moveTo(PAD_LEFT, y);
-    ctx.lineTo(W - PAD_RIGHT, y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(255,170,0,0.8)';
-    ctx.font = '8px IBM Plex Mono';
-    ctx.textAlign = 'left';
-    ctx.fillText('PTB ' + priceToBeat.toFixed(0), PAD_LEFT + 4, y - 3);
-  }
-
-  // ── Time axis ──
-  ctx.fillStyle = '#3a6070';
-  ctx.font = '8px IBM Plex Mono';
-  ctx.textAlign = 'center';
-  const step = Math.max(1, Math.floor(visible.length / 8));
-  for (let i = 0; i < visible.length; i += step) {
-    const d = new Date(visible[i].t);
-    const label = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const x = PAD_LEFT + i * candleW + candleW / 2;
-    ctx.fillText(label, x, H - 4);
-  }
-}
-
-// ─── UI UPDATE FUNCTIONS ──────────────────────────────────────────────────────
-
-function updateHALUI(ind) {
-  if (!ind || !ind.rsi) return;
-
-  const { rsi, macd, bb, volRatio, rawScore } = ind;
-
-  // RSI
-  document.getElementById('rsi-val').textContent = rsi.toFixed(1);
-  const rsiRow = document.getElementById('ind-rsi');
-  const rsiSig = document.getElementById('rsi-sig');
-  if (rsi < 30)      { rsiRow.className='indicator-row bull'; rsiSig.className='ind-signal sig-bull'; rsiSig.textContent='OVSLD'; }
-  else if (rsi > 70) { rsiRow.className='indicator-row bear'; rsiSig.className='ind-signal sig-bear'; rsiSig.textContent='OVBGT'; }
-  else               { rsiRow.className='indicator-row neutral'; rsiSig.className='ind-signal sig-neutral'; rsiSig.textContent='MID'; }
-
-  // MACD
-  document.getElementById('macd-val').textContent = macd.hist.toFixed(1);
-  const macdRow = document.getElementById('ind-macd');
-  const macdSig = document.getElementById('macd-sig');
-  if (macd.hist > 0) { macdRow.className='indicator-row bull'; macdSig.className='ind-signal sig-bull'; macdSig.textContent='BULL'; }
-  else               { macdRow.className='indicator-row bear'; macdSig.className='ind-signal sig-bear'; macdSig.textContent='BEAR'; }
-
-  // BB
-  document.getElementById('bb-val').textContent = (bb.pctB * 100).toFixed(1) + '%';
-  const bbRow = document.getElementById('ind-bb');
-  const bbSig = document.getElementById('bb-sig');
-  if (bb.squeeze) { bbRow.className='indicator-row neutral'; bbSig.className='ind-signal sig-neutral'; bbSig.textContent='SQZE'; }
-  else if (bb.pctB < 0.2) { bbRow.className='indicator-row bull'; bbSig.className='ind-signal sig-bull'; bbSig.textContent='LOW'; }
-  else if (bb.pctB > 0.8) { bbRow.className='indicator-row bear'; bbSig.className='ind-signal sig-bear'; bbSig.textContent='HIGH'; }
-  else { bbRow.className='indicator-row neutral'; bbSig.className='ind-signal sig-neutral'; bbSig.textContent='MID'; }
-
-  // Vol
-  document.getElementById('vol-val').textContent = volRatio.toFixed(2) + 'x';
-  const volRow = document.getElementById('ind-vol');
-  const volSig = document.getElementById('vol-sig');
-  if (volRatio > 2)      { volRow.className='indicator-row bull'; volSig.className='ind-signal sig-bull'; volSig.textContent='SPIKE'; }
-  else if (volRatio > 1.5) { volRow.className='indicator-row neutral'; volSig.className='ind-signal sig-neutral'; volSig.textContent='HIGH'; }
-  else                   { volRow.className='indicator-row neutral'; volSig.className='ind-signal sig-neutral'; volSig.textContent='NORM'; }
-
-  // Score
-  document.getElementById('score-val').textContent = (rawScore * 100).toFixed(0);
-  const scoreRow = document.getElementById('ind-score');
-  const scoreSig = document.getElementById('score-sig');
-  if (rawScore > 0.15)       { scoreRow.className='indicator-row bull'; scoreSig.className='ind-signal sig-bull'; scoreSig.textContent='↑ BULL'; }
-  else if (rawScore < -0.15) { scoreRow.className='indicator-row bear'; scoreSig.className='ind-signal sig-bear'; scoreSig.textContent='↓ BEAR'; }
-  else                       { scoreRow.className='indicator-row neutral'; scoreSig.className='ind-signal sig-neutral'; scoreSig.textContent='FLAT'; }
-}
-
-function updatePredictionUI() {
-  if (!lockedPrediction) return;
-  const el = document.getElementById('pred-direction');
-  const conf = document.getElementById('pred-conf-val');
-  conf.textContent = lockedPrediction.confidence;
-  if (lockedPrediction.direction === 1)       { el.textContent = '▲ UP';   el.style.color = 'var(--green)'; el.style.textShadow = '0 0 20px var(--green)'; }
-  else if (lockedPrediction.direction === -1) { el.textContent = '▼ DOWN'; el.style.color = 'var(--red)';   el.style.textShadow = '0 0 20px var(--red)'; }
-  else                                        { el.textContent = '■ NEUT'; el.style.color = 'var(--amber)'; el.style.textShadow = 'none'; }
-}
-
-function updateWLUI() {
-  document.getElementById('win-count').textContent  = wlTracker.wins;
-  document.getElementById('loss-count').textContent = wlTracker.losses;
-  const acc = wlTracker.total > 0 ? ((wlTracker.wins / wlTracker.total) * 100).toFixed(0) + '%' : '–%';
-  document.getElementById('acc-pct').textContent = acc;
-}
-
-function updateEpochBadge(s) {
-  const el = document.getElementById('epoch-status-badge');
-  if (s === 'START')       { el.textContent = 'START'; el.className = 'badge-start'; }
-  else if (s === 'ACTIVE') { el.textContent = 'ACTIVE'; el.className = 'badge-active'; }
-  else if (s === 'END')    { el.textContent = 'END'; el.className = 'badge-end'; }
-}
-
-function updatePTBDisplay() {
-  const el = document.getElementById('ptb-display');
-  if (priceToBeat > 0) el.textContent = priceToBeat.toFixed(2);
-  else el.textContent = '–––––.––';
-}
-
-function updateOutcomeMini(outcome) {
-  const el = document.getElementById('outcome-mini');
-  const chip = document.createElement('span');
-  chip.style.cssText = `font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 5px;border-radius:1px;`;
-  if (outcome === 'UP')   chip.style.cssText += 'background:var(--green-dim);color:var(--green);';
-  else if (outcome === 'DOWN') chip.style.cssText += 'background:var(--red-dim);color:var(--red);';
-  else chip.style.cssText += 'background:var(--amber-dim);color:var(--amber);';
-  chip.textContent = outcome;
-  el.appendChild(chip);
-  if (el.children.length > 5) el.removeChild(el.firstChild);
-}
-
-function updateActionLog(record) {
-  const container = document.getElementById('action-log');
-  const row = document.createElement('div');
-  row.className = 'log-row';
-
-  const outcomeClass = record.outcome === 'UP' ? 'lr-up' : record.outcome === 'DOWN' ? 'lr-down' : 'lr-neut';
-  const predText = record.prediction === 1 ? '▲ UP' : record.prediction === -1 ? '▼ DOWN' : '■ NEUT';
-  const evalClass = record.eval === 'WIN' ? 'lr-win' : record.eval === 'LOSS' ? 'lr-loss' : '';
-
-  row.innerHTML = `
-    <span class="lr-time">${record.time}</span>
-    <span class="lr-epoch">#${record.n}</span>
-    <span class="lr-price">${record.open.toFixed(1)}</span>
-    <span class="lr-price">${record.close.toFixed(1)}</span>
-    <span class="lr-gap ${record.gap >= 0 ? 'lr-up' : 'lr-down'}">${(record.gap >= 0 ? '+' : '')}${record.gap.toFixed(2)}</span>
-    <span class="lr-outcome ${outcomeClass}">${record.outcome}</span>
-    <span class="lr-pred">${predText}</span>
-    <span class="lr-result ${evalClass}">${record.eval}</span>
-  `;
-
-  // Insert after header row
-  const header = container.firstElementChild;
-  container.insertBefore(row, header ? header.nextSibling : null);
-
-  document.getElementById('log-count').textContent = actionLog.length + ' RECORDS';
-}
-
-function renderTradeFeed() {
-  const container = document.getElementById('trade-log');
-  container.innerHTML = '';
-  tradeBuffer.slice(0, 25).forEach(t => {
-    const row = document.createElement('div');
-    row.className = `trade-row trade-${t.side}`;
-    const d = new Date(t.time);
-    const ts = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-    row.innerHTML = `
-      <span class="t-price">${t.price.toFixed(2)}</span>
-      <span class="t-qty">${t.qty.toFixed(4)}</span>
-      <span class="t-time">${ts}</span>
-    `;
-    container.appendChild(row);
-  });
-}
-
-// ─── CALIBRATION ENGINE ────────────────────────────────────────────────────────
-
-document.getElementById('cal-btn').addEventListener('click', () => {
-  const targetRaw = parseFloat(document.getElementById('target-price-input').value);
-  if (!isNaN(targetRaw) && rawSpotPrice > 0) {
-    globalOffset = targetRaw - rawSpotPrice;
-    const sign = globalOffset >= 0 ? '+' : '';
-    document.getElementById('offset-live').textContent = sign + globalOffset.toFixed(2);
-    document.getElementById('offset-val').textContent  = sign + globalOffset.toFixed(2);
-    // Redraw chart with new offset
-    drawChart();
-    // Flash confirmation
-    const btn = document.getElementById('cal-btn');
-    btn.style.background = 'rgba(0,255,136,0.2)';
-    btn.style.borderColor = 'var(--green)';
-    btn.style.color = 'var(--green)';
-    btn.textContent = '✓  SYNCED';
-    setTimeout(() => {
-      btn.style.background = '';
-      btn.style.borderColor = '';
-      btn.style.color = '';
-      btn.textContent = '⟳  SYNC OFFSET';
-    }, 2000);
-  }
-});
-
-// ─── RESIZE HANDLER ───────────────────────────────────────────────────────────
-
-const resizeObserver = new ResizeObserver(() => drawChart());
-resizeObserver.observe(document.getElementById('chart-canvas-wrap'));
-
-// ─── BOOT SEQUENCE ────────────────────────────────────────────────────────────
-
-(async function boot() {
-  await fetchInit();
-  connectPerpWSS();
-  connectSpotWSS();
-
-  // Trigger initial epoch check
-  const now = new Date();
-  if (now.getMinutes() % 5 !== 0) {
-    // We're mid-epoch — synthesize an active state
-    epochState = EPOCH_STATE.ACTIVE;
-    priceToBeat = adjustedPrice > 0 ? adjustedPrice : 0;
-    epochStartTime = Date.now();
-    updateEpochBadge('ACTIVE');
-    updatePTBDisplay();
-    const result = runHALEngine();
-    lockedPrediction = { direction: result.direction, confidence: result.confidence };
-    frozenIndicators = result.indicators;
-    updatePredictionUI();
-  }
-})();
-</script>
+
+<body onload="onPageLoad()">
+
+	<div id="header">
+		<div class="header-left">
+			<h1>root@oracle-node:~# ./init_sync.sh --mode AUTONOMOUS_QUANT</h1>
+			<div class="price-line">
+				<span class="main-price" id="current-price">BAĞLANIYOR...</span>
+			</div>
+			<div><span class="sync-label">OTONOM YÖNETİM AKTİF: HAL-9000 </span></div>
+		</div>
+
+		<div class="sync-box">
+			<div class="sync-title">
+				<span>🎯 PYTH AUTO-PEG</span>
+				<span class="pulse" id="peg-indicator" style="display:none;"></span>
+			</div>
+			<div class="sync-input-group">
+				<button id="auto-peg-btn" class="auto-peg active" onclick="toggleAutoPeg()">OTOMATİK SENKRON
+					(AÇIK)</button>
+			</div>
+			<div class="sync-status">Canlı Offset: <span id="offset-display" style="color:#00FF41">+0.00 USD</span>
+			</div>
+		</div>
+
+		<div class="timer-box">
+			<div class="timer-title">AKTİF ZAMAN DİLİMİ (5m)</div>
+			<div class="timer-interval" id="interval-display">--:-- - --:--</div>
+			<div class="timer-display" id="countdown-timer">00:00</div>
+		</div>
+	</div>
+
+	<div id="main-container">
+		<div class="left-column">
+
+			<div class="portfolio-box">
+				<div class="balance-row">
+					<div>
+						<div class="balance-label">Sanal Portföy Büyüklüğü</div>
+						<div class="balance-value" id="virtual-balance">$1,000.00</div>
+					</div>
+					<button class="reset-btn" onclick="addFunds()">+1000$ Destek</button>
+				</div>
+
+				<div class="auto-trade-switch">
+					<div class="auto-trade-label" id="auto-trade-label">
+						<span class="indicator"></span> OTO-PİLOT MODU
+					</div>
+					<button class="toggle-btn" id="btn-auto-toggle" onclick="toggleAutoTrade()">KAPALI</button>
+				</div>
+
+				<div class="odds-container">
+					<div class="odds-box">
+						<span class="odds-title">UP HİSSESİ (ANLIK)</span>
+						<span class="odds-val up" id="live-up-odds">0.50$</span>
+					</div>
+					<div class="odds-box">
+						<span class="odds-title">DOWN HİSSESİ (ANLIK)</span>
+						<span class="odds-val down" id="live-down-odds">0.50$</span>
+					</div>
+				</div>
+
+				<div class="manual-bet-cover active" id="manual-bet-ui">
+					<div class="bet-inputs">
+						<div class="bet-input-group">
+							<label><span>Manuel Yatırım ($)</span></label>
+							<input type="number" id="input-amount" value="100" step="10" min="1">
+						</div>
+					</div>
+					<div class="bet-buttons">
+						<button class="btn-bet btn-up" id="btn-buy-up" onclick="placeBet('UP')">UP AL</button>
+						<button class="btn-bet btn-down" id="btn-buy-down" onclick="placeBet('DOWN')">DOWN AL</button>
+					</div>
+				</div>
+
+				<div class="active-bet-card" id="active-bet-display">
+					<div class="active-bet-title">
+						<span>KİLİTLİ İŞLEM</span>
+						<span id="active-bet-type-badge" style="color:#fff;">--</span>
+					</div>
+					<div class="active-bet-details" id="active-bet-info">--</div>
+				</div>
+			</div>
+
+			<div class="panel" style="flex-shrink: 0; margin-bottom: 5px;">
+				<div class="panel-title"><span>🎯 HEDEF FİYAT (BEAT ENGINE)</span></div>
+				<div class="beat-engine-box" style="margin-bottom:0;">
+					<div class="beat-row">
+						<span class="beat-label">Hedef (Price to Beat):</span>
+						<span class="beat-value" id="ptb-val">BEKLENİYOR</span>
+					</div>
+					<div class="beat-row">
+						<span class="beat-label">Fark (Gap):</span>
+						<span class="gap-neutral" id="ptb-gap">--</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel" style="flex-grow: 1; min-height: 150px;">
+				<div class="panel-title" style="display: flex; justify-content: space-between;">
+					<span>DÖNGÜ GEÇMİŞİ</span>
+					<span style="color:#00FF41; cursor:pointer; font-size:9px;" onclick="clearHistory()">[SİL]</span>
+				</div>
+				<div id="history-logs"></div>
+			</div>
+		</div>
+
+		<div class="right-column">
+			<div class="panel" style="flex-grow: 1;">
+				<div class="panel-title">
+					<span>Bitcoin 5-Dakikalık Mumlar</span>
+					<span>[Son 4 Saat / 48 Mum]</span>
+				</div>
+				<div id="mum-grafik-container">
+					<canvas id="mum-grafik-canvas"></canvas>
+				</div>
+			</div>
+
+			<div class="panel hal-panel">
+				<div class="hal-header">
+					<div class="hal-title">
+						<div class="hal-eye"></div> HAL-9000 PROFESYONEL KUANT MOTORU
+					</div>
+					<div style="font-size: 10px; color:#888;">Başarı Skoru: <span id="hal-score"
+							style="color:#fff; font-weight:bold;">0W - 0L</span></div>
+				</div>
+				<div class="hal-grid">
+					<div class="hal-metric"><span>RSI (14)</span><strong id="hal-rsi">--</strong></div>
+					<div class="hal-metric"><span>EMA Kesişimi</span><strong id="hal-ema">--</strong></div>
+					<div class="hal-metric"><span>Volatilite (ATR)</span><strong id="hal-atr">--</strong></div>
+					<div class="hal-metric"><span>Price Action</span><strong id="hal-pa">--</strong></div>
+					<div class="hal-metric"><span>Momentum (3m)</span><strong id="hal-mom">--</strong></div>
+					<div class="hal-metric"><span>Trend Hacmi</span><strong id="hal-trend">--</strong></div>
+					<div class="hal-metric"><span>S/R Durumu</span><strong id="hal-sr">--</strong></div>
+					<div class="hal-metric"><span>Bollinger (20)</span><strong id="hal-bb">--</strong></div>
+				</div>
+				<div class="hal-prediction-box">
+					<div class="hal-pred-text">
+						<span class="locked-badge">[KİLİTLİ ANALİZ]</span>
+						<span>Aktif 5-DK Kararı:</span>
+					</div>
+					<div class="hal-pred-value hal-pred-wait" id="hal-prediction">
+						HESAPLANIYOR...
+						<span class="hal-confidence" id="hal-confidence">Veri Toplanıyor</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="status">
+		<div>
+			<span class="dot" id="index-status-dot" style="background-color: yellow;"></span> Fiyat: <span
+				id="index-status-text" style="color: yellow;">BEKLENİYOR</span> |
+			<span class="dot" id="binance-status-dot" style="background-color: yellow; margin-left:10px;"></span>
+			Grafik: <span id="binance-status-text" style="color: yellow;">BEKLENİYOR</span>
+		</div>
+		<div>Hafıza: <span style="color:#00FF41">Aktif</span> | root@oracle-node:~#</div>
+	</div>
+
+	<script>
+		const priceEl = document.getElementById('current-price');
+		const historyLogsEl = document.getElementById('history-logs');
+		const canvas = document.getElementById('mum-grafik-canvas');
+		const ctx = canvas.getContext('2d');
+
+		let currentRawPrice = 0;
+		let lastAdjustedPrice = 0;
+		let globalOffset = 0;
+		let klineData = [];
+		const interval = '5m';
+		const limit = 48;
+
+		// --- LOCAL STORAGE & SIMULATOR STATE ---
+		let state = {
+			balance: 1000.00,
+			activeBet: null,
+			priceToBeat: 0,
+			halStats: { won: 0, lost: 0 },
+			lockedPredictionDirection: 0, // 1, -1, 0
+			lockedConfidence: 0, // % Güven oranı
+			lockedPredictionHTML: "",
+			historyLogs: [],
+			isAutoTradeActive: false // Oto-pilot varsayılan kapalı
+		};
+
+		let currentUpOdds = 0.50;
+		let currentDownOdds = 0.50;
+		let remainingSecondsGlobal = 300;
+
+		function loadState() {
+			const saved = localStorage.getItem('btcQuantBotState');
+			if (saved) {
+				state = JSON.parse(saved);
+				if (state.isAutoTradeActive === undefined) state.isAutoTradeActive = false; // Eski veriler için
+
+				document.getElementById('hal-score').innerText = `${state.halStats.won}W - ${state.halStats.lost}L`;
+				if (state.priceToBeat > 0) document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+				if (state.lockedPredictionHTML !== "") {
+					const predEl = document.getElementById('hal-prediction');
+					predEl.innerHTML = state.lockedPredictionHTML;
+					if (state.lockedPredictionDirection === 1) predEl.className = "hal-pred-value hal-pred-up";
+					else if (state.lockedPredictionDirection === -1) predEl.className = "hal-pred-value hal-pred-down";
+				}
+				renderHistoryLogs();
+			}
+			syncAutoTradeUI();
+			updatePortfolioUI();
+		}
+
+		function saveState() { localStorage.setItem('btcQuantBotState', JSON.stringify(state)); }
+
+		function clearHistory() {
+			if (confirm("Tüm geçmişi ve cüzdanı sıfırlamak istiyor musun?")) {
+				state = { balance: 1000, activeBet: null, priceToBeat: 0, halStats: { won: 0, lost: 0 }, lockedPredictionDirection: 0, lockedConfidence: 0, lockedPredictionHTML: "", historyLogs: [], isAutoTradeActive: false };
+				saveState(); loadState();
+			}
+		}
+
+		// --- OTO-PİLOT KONTROLLERİ ---
+		function toggleAutoTrade() {
+			state.isAutoTradeActive = !state.isAutoTradeActive;
+			saveState();
+			syncAutoTradeUI();
+		}
+
+		function syncAutoTradeUI() {
+			const btn = document.getElementById('btn-auto-toggle');
+			const label = document.getElementById('auto-trade-label');
+			const manualUI = document.getElementById('manual-bet-ui');
+
+			if (state.isAutoTradeActive) {
+				btn.innerText = "AÇIK";
+				btn.className = "toggle-btn active";
+				label.className = "auto-trade-label active";
+				manualUI.classList.remove('active'); // Manuel bahis kısmını gizle
+			} else {
+				btn.innerText = "KAPALI";
+				btn.className = "toggle-btn";
+				label.className = "auto-trade-label";
+				manualUI.classList.add('active'); // Manuel bahis kısmını göster
+			}
+		}
+
+		// --- DİNAMİK AMM MOTORU ---
+		function calculateDynamicOdds() {
+			if (state.priceToBeat === 0 || lastAdjustedPrice === 0) return;
+			const gap = lastAdjustedPrice - state.priceToBeat;
+			const timeMultiplier = 1 + ((300 - remainingSecondsGlobal) / 300) * 2.5;
+			const k = 0.06 * timeMultiplier;
+			let p = 1 / (1 + Math.exp(-k * gap));
+
+			if (p > 0.99) p = 0.99;
+			if (p < 0.01) p = 0.01;
+
+			currentUpOdds = p; currentDownOdds = 1.00 - p;
+
+			document.getElementById('live-up-odds').innerText = `${currentUpOdds.toFixed(2)}$`;
+			document.getElementById('live-down-odds').innerText = `${currentDownOdds.toFixed(2)}$`;
+		}
+
+		// --- PORTFÖY VE BAHİS ---
+		function updatePortfolioUI() {
+			document.getElementById('virtual-balance').innerText = `$${state.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+			const btnUp = document.getElementById('btn-buy-up');
+			const btnDown = document.getElementById('btn-buy-down');
+			const activeBetCard = document.getElementById('active-bet-display');
+
+			if (state.activeBet) {
+				btnUp.disabled = true; btnDown.disabled = true;
+				activeBetCard.style.display = 'block';
+
+				const color = state.activeBet.type === 'UP' ? '#00FF41' : '#FF003C';
+				document.getElementById('active-bet-type-badge').innerText = state.activeBet.isAuto ? "(BOT OYNADI)" : "(MANUEL)";
+				document.getElementById('active-bet-info').innerHTML = `
+                    <span>Yön: <strong style="color:${color}">${state.activeBet.type}</strong></span>
+                    <span>Risk: $${state.activeBet.amount.toFixed(2)}</span>
+                    <span>Kâr Hedefi: <strong style="color:#00FF41">+$${(state.activeBet.payout - state.activeBet.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
+                `;
+			} else {
+				btnUp.disabled = false; btnDown.disabled = false;
+				activeBetCard.style.display = 'none';
+			}
+		}
+
+		function addFunds() { state.balance += 1000; saveState(); updatePortfolioUI(); }
+
+		function placeBet(type, isAuto = false, autoAmount = 0, autoOdds = 0) {
+			if (state.activeBet) return;
+			if (state.priceToBeat === 0) return;
+			if (remainingSecondsGlobal <= 5) return;
+
+			let amount = isAuto ? autoAmount : parseFloat(document.getElementById('input-amount').value);
+			if (isNaN(amount) || amount <= 0) return alert("Geçerli bir tutar girin!");
+			if (amount > state.balance) amount = state.balance; // Bakiye yetmezse max bas (bot için koruma)
+			if (amount <= 0) return;
+
+			let odds = isAuto ? autoOdds : (type === 'UP' ? currentUpOdds : currentDownOdds);
+			let shares = amount / odds;
+
+			state.balance -= amount;
+			state.activeBet = { type: type, amount: amount, shares: shares, payout: shares * 1.00, lockedOdds: odds, isAuto: isAuto };
+
+			saveState(); updatePortfolioUI();
+		}
+
+		function renderHistoryLogs() {
+			historyLogsEl.innerHTML = '';
+			state.historyLogs.forEach(log => {
+				const div = document.createElement('div');
+				div.className = `history-entry ${log.result}`;
+				div.innerHTML = `
+                    <div class="hist-row">
+                        <span class="hist-time">[${log.time}] PİYASA:</span>
+                        <span class="${log.marketClass}">${log.marketType} (${log.marketGap})</span>
+                    </div>
+                    ${log.betMsg ? `<div class="hist-row" style="margin-top:2px;">${log.betMsg}</div>` : ''}
+                `;
+				historyLogsEl.appendChild(div);
+			});
+		}
+
+		function addHistoryLog(logObj) {
+			state.historyLogs.unshift(logObj);
+			if (state.historyLogs.length > 40) state.historyLogs.pop();
+			saveState(); renderHistoryLogs();
+		}
+
+		// --- PYTH AUTO-PEG ---
+		let isAutoPegActive = true; let autoPegIntervalId = null;
+		function toggleAutoPeg() {
+			const btn = document.getElementById('auto-peg-btn'); const indicator = document.getElementById('peg-indicator');
+			isAutoPegActive = !isAutoPegActive;
+			if (isAutoPegActive) {
+				btn.innerText = "OTOMATİK SENKRON (AÇIK)"; btn.className = "auto-peg active"; indicator.style.display = "block";
+				syncWithPythOracle(); autoPegIntervalId = setInterval(syncWithPythOracle, 5000);
+			} else {
+				btn.innerText = "OTOMATİK SENKRON (KAPALI)"; btn.className = "auto-peg"; indicator.style.display = "none";
+				clearInterval(autoPegIntervalId);
+			}
+		}
+
+		async function syncWithPythOracle() {
+			if (currentRawPrice === 0) return;
+			try {
+				const res = await fetch('https://hermes.pyth.network/api/latest_price_feeds?ids[]=e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43');
+				const data = await res.json();
+				if (data && data.length > 0) {
+					const priceData = data[0].price;
+					const pythPrice = Number(priceData.price) * Math.pow(10, priceData.expo);
+					globalOffset = pythPrice - currentRawPrice;
+					const sign = globalOffset >= 0 ? '+' : '';
+					document.getElementById('offset-display').innerText = `${sign}${globalOffset.toFixed(2)} USD`;
+
+					if (state.priceToBeat > 0 && lastAdjustedPrice > 0) {
+						const oldAdjusted = lastAdjustedPrice; const newAdjusted = currentRawPrice + globalOffset;
+						state.priceToBeat += (newAdjusted - oldAdjusted);
+						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+						saveState();
+					}
+					updatePriceDisplay(currentRawPrice); drawCorrectedCandles();
+				}
+			} catch (error) { }
+		}
+
+		function updatePriceDisplay(rawPrice) {
+			currentRawPrice = rawPrice; const adjustedPrice = rawPrice + globalOffset;
+			priceEl.innerText = `$${adjustedPrice.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`;
+
+			if (adjustedPrice > lastAdjustedPrice && lastAdjustedPrice !== 0) priceEl.style.color = '#00FF41';
+			else if (adjustedPrice < lastAdjustedPrice && lastAdjustedPrice !== 0) priceEl.style.color = '#FF003C';
+			lastAdjustedPrice = adjustedPrice;
+
+			if (state.priceToBeat === 0 && adjustedPrice > 0) {
+				state.priceToBeat = adjustedPrice;
+				document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+				saveState();
+			}
+
+			if (state.priceToBeat > 0) {
+				const gap = adjustedPrice - state.priceToBeat; const gapEl = document.getElementById('ptb-gap');
+				if (gap > 0) { gapEl.innerText = `+$${gap.toFixed(2)} (UP)`; gapEl.className = 'gap-up'; }
+				else if (gap < 0) { gapEl.innerText = `-$${Math.abs(gap).toFixed(2)} (DOWN)`; gapEl.className = 'gap-down'; }
+				else { gapEl.innerText = `$0.00 (EŞİT)`; gapEl.className = 'gap-neutral'; }
+			}
+		}
+
+		// --- HAL-9000 YENİ NESİL KUANT MOTORU ---
+		function updateLiveMetrics() {
+			if (klineData.length < 30) return null;
+			const closes = klineData.map(d => d.close + globalOffset);
+			const highs = klineData.map(d => d.high + globalOffset);
+			const lows = klineData.map(d => d.low + globalOffset);
+			const opens = klineData.map(d => d.open + globalOffset);
+			const volumes = klineData.map(d => d.volume);
+			const currentClose = closes[closes.length - 1];
+
+			// 1. RSI
+			let gains = 0, losses = 0;
+			for (let i = closes.length - 14; i < closes.length; i++) { const diff = closes[i] - closes[i - 1]; if (diff >= 0) gains += diff; else losses -= diff; }
+			const rsi = 100 - (100 / (1 + ((gains / 14) / (losses / 14 || 1))));
+			document.getElementById('hal-rsi').innerHTML = rsi > 65 ? `<span style="color:#FF003C">${rsi.toFixed(1)} ŞİŞKİN</span>` : (rsi < 35 ? `<span style="color:#00FF41">${rsi.toFixed(1)} UCUZ</span>` : `<span style="color:#ffb100">${rsi.toFixed(1)} NÖTR</span>`);
+
+			// 2. EMA Crossover (9, 21)
+			const ema9 = closes.slice(-9).reduce((a, b) => a + b, 0) / 9;
+			const ema21 = closes.slice(-21).reduce((a, b) => a + b, 0) / 21;
+			let emaText = `<span style="color:#ffb100">KARIŞIK</span>`;
+			if (ema9 > ema21 * 1.001) emaText = `<span style="color:#00FF41">BULL CROSS</span>`;
+			if (ema9 < ema21 * 0.999) emaText = `<span style="color:#FF003C">BEAR CROSS</span>`;
+			document.getElementById('hal-ema').innerHTML = emaText;
+
+			// 3. Volatility (ATR - Average True Range - Basitleştirilmiş)
+			let trSum = 0;
+			for (let i = highs.length - 14; i < highs.length; i++) { trSum += (highs[i] - lows[i]); }
+			const atr = trSum / 14;
+			const atrPercent = (atr / currentClose) * 100;
+			document.getElementById('hal-atr').innerHTML = atrPercent > 0.15 ? `<span style="color:#00FF41">YÜKSEK (RİSK)</span>` : `<span style="color:#888">DÜŞÜK (GÜVENLİ)</span>`;
+
+			// 4. Price Action (Son Kapanmış Mum Analizi)
+			const prevOpen = opens[opens.length - 2]; const prevClose = closes[closes.length - 2];
+			const prevHigh = highs[highs.length - 2]; const prevLow = lows[lows.length - 2];
+			let paText = `<span style="color:#888">STANDART</span>`;
+			const body = Math.abs(prevOpen - prevClose);
+			const upperWick = prevHigh - Math.max(prevOpen, prevClose);
+			const lowerWick = Math.min(prevOpen, prevClose) - prevLow;
+			if (lowerWick > body * 2 && prevClose > prevOpen) paText = `<span style="color:#00FF41">BULL PINBAR</span>`;
+			else if (upperWick > body * 2 && prevClose < prevOpen) paText = `<span style="color:#FF003C">BEAR PINBAR</span>`;
+			else if (body > atr * 1.5) paText = prevClose > prevOpen ? `<span style="color:#00FF41">BULL ENGULF</span>` : `<span style="color:#FF003C">BEAR ENGULF</span>`;
+			document.getElementById('hal-pa').innerHTML = paText;
+
+			// 5. Momentum (3m)
+			const momDiff = currentClose - closes[closes.length - 4];
+			document.getElementById('hal-mom').innerHTML = momDiff > 10 ? `<span style="color:#00FF41">İVMELİ (UP)</span>` : (momDiff < -10 ? `<span style="color:#FF003C">İVMELİ (DWN)</span>` : `<span style="color:#ffb100">YATAY</span>`);
+
+			// 6. Trend Hacmi
+			const avgVol = volumes.slice(-10).reduce((a, b) => a + b, 0) / 10; const currentVol = volumes[volumes.length - 1];
+			document.getElementById('hal-trend').innerHTML = currentVol > avgVol * 1.2 ? (currentClose > closes[closes.length - 2] ? `<span style="color:#00FF41">ALICI BASKISI</span>` : `<span style="color:#FF003C">SATICI BASKISI</span>`) : `<span style="color:#888">ZAYIF</span>`;
+
+			// 7. S/R
+			const max20 = Math.max(...highs.slice(-20)); const min20 = Math.min(...lows.slice(-20));
+			document.getElementById('hal-sr').innerHTML = currentClose > max20 * 0.998 ? `<span style="color:#FF003C">DİRENÇTE</span>` : (currentClose < min20 * 1.002 ? `<span style="color:#00FF41">DESTEKTE</span>` : `<span style="color:#888">KANAL İÇİ</span>`);
+
+			// 8. Bollinger
+			const sma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+			document.getElementById('hal-bb').innerHTML = currentClose > sma20 * 1.002 ? `<span style="color:#FF003C">ÜST BANT</span>` : (currentClose < sma20 * 0.998 ? `<span style="color:#00FF41">ALT BANT</span>` : `<span style="color:#ffb100">ORTA BANT</span>`);
+
+			return { rsi, ema9, ema21, atrPercent, paText, currentClose, sma20, currentVol, avgVol, momDiff, max20, min20 };
+		}
+
+		function generateLockedPrediction() {
+			const metrics = updateLiveMetrics(); if (!metrics) return;
+
+			let score = 0;
+
+			// Wall Street Weighting Logic
+			if (metrics.ema9 > metrics.ema21) score += 3; else score -= 3; // Trend has high weight
+			if (metrics.rsi > 68) score -= 2; else if (metrics.rsi < 32) score += 2; // Mean reversion
+			if (metrics.paText.includes("BULL")) score += 3; else if (metrics.paText.includes("BEAR")) score -= 3; // Price action confirms
+			if (metrics.momDiff > 10) score += 2; else if (metrics.momDiff < -10) score -= 2;
+			if (metrics.currentClose > metrics.max20 * 0.998) score -= 2; else if (metrics.currentClose < metrics.min20 * 1.002) score += 2;
+			if (metrics.currentClose < metrics.sma20 * 0.998) score += 1; else if (metrics.currentClose > metrics.sma20 * 1.002) score -= 1;
+
+			const absoluteScore = Math.abs(score);
+			let confidence = 50 + (absoluteScore * 3.5);
+			if (confidence > 92) confidence = 92; // Max %92 güven (Gerçekçilik)
+
+			const predEl = document.getElementById('hal-prediction');
+			state.lockedConfidence = confidence;
+
+			if (score > 3) { // Daha seçici, threshold arttı
+				state.lockedPredictionDirection = 1;
+				state.lockedPredictionHTML = `UP <span class="hal-confidence">%${confidence.toFixed(1)} GÜVEN ORANI</span>`;
+				predEl.className = "hal-pred-value hal-pred-up";
+			} else if (score < -3) {
+				state.lockedPredictionDirection = -1;
+				state.lockedPredictionHTML = `DOWN <span class="hal-confidence">%${confidence.toFixed(1)} GÜVEN ORANI</span>`;
+				predEl.className = "hal-pred-value hal-pred-down";
+			} else {
+				state.lockedPredictionDirection = 0;
+				state.lockedPredictionHTML = `PAS <span class="hal-confidence">PİYASA ÇOK RİSKLİ</span>`;
+				predEl.className = "hal-pred-value hal-pred-wait";
+			}
+			predEl.innerHTML = state.lockedPredictionHTML; saveState();
+		}
+
+		// --- BOT OTO-ALIM FONKSİYONU ---
+		function executeAutoTrade() {
+			if (!state.isAutoTradeActive || state.activeBet) return;
+
+			// Bot sadece karar kesinse ve güven %60'ın üstündeyse işleme girer
+			if (state.lockedPredictionDirection !== 0 && state.lockedConfidence > 60) {
+				const type = state.lockedPredictionDirection === 1 ? 'UP' : 'DOWN';
+				const odds = type === 'UP' ? currentUpOdds : currentDownOdds;
+
+				// Risk Yönetimi: Güven yüksekse %10, düşükse %2 kasa basar.
+				let riskPerc = (state.lockedConfidence - 50) / 100;
+				riskPerc = Math.min(Math.max(riskPerc, 0.02), 0.10); // %2 ile %10 arası
+
+				let amount = state.balance * riskPerc;
+				if (amount < 10) amount = 10; // Min 10$ işlem
+				if (amount > state.balance) return; // Para bitmiş
+
+				placeBet(type, true, amount, odds);
+			}
+		}
+
+		// --- ZAMANLAYICI & DÖNGÜ ---
+		let lastSnapshotMinute = -1;
+		const timerEl = document.getElementById('countdown-timer');
+		const intervalDisplayEl = document.getElementById('interval-display');
+
+		function updateClockTimer() {
+			const now = new Date();
+			const minutes = now.getMinutes();
+			const seconds = now.getSeconds();
+			const hours = now.getHours();
+
+			const remainingMinutes = 4 - (minutes % 5);
+			const remainingSeconds = 59 - seconds;
+			remainingSecondsGlobal = (remainingMinutes * 60) + remainingSeconds;
+
+			const startMin = minutes - (minutes % 5);
+			let endMin = startMin + 5; let endHr = hours;
+			if (endMin >= 60) { endMin = 0; endHr = (endHr + 1) % 24; }
+
+			const formatTime = (h, m) => `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+			intervalDisplayEl.innerText = `${formatTime(hours, startMin)} - ${formatTime(endHr, endMin)}`;
+			timerEl.innerText = `${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+			calculateDynamicOdds();
+
+			// EĞER TAM 5 DAKİKA DOLDUYSA (00 Saniye)
+			if (minutes % 5 === 0 && seconds === 0) {
+				if (lastSnapshotMinute !== minutes) {
+					if (lastAdjustedPrice > 0 && state.priceToBeat > 0) {
+
+						const resultGap = lastAdjustedPrice - state.priceToBeat;
+						const actualResult = resultGap > 0 ? 1 : (resultGap < 0 ? -1 : 0);
+						const resultType = resultGap > 0 ? 'UP' : (resultGap < 0 ? 'DOWN' : 'NEUTRAL');
+						const resultClass = resultGap > 0 ? 'log-up' : (resultGap < 0 ? 'log-down' : '');
+						const sign = resultGap > 0 ? '+' : '';
+
+						const prevStartMin = (minutes - 5 < 0) ? 55 : minutes - 5;
+						const prevHr = (minutes - 5 < 0) ? (hours === 0 ? 23 : hours - 1) : hours;
+						const prevIntervalStr = `${formatTime(prevHr, prevStartMin)} - ${formatTime(hours, minutes)}`;
+
+						let logResult = 'neutral';
+						let betMessage = '';
+
+						// 1. BAHİSİ KONTROL ET
+						if (state.activeBet) {
+							if ((state.activeBet.type === 'UP' && actualResult === 1) || (state.activeBet.type === 'DOWN' && actualResult === -1)) {
+								state.balance += state.activeBet.payout;
+								const netProfit = state.activeBet.payout - state.activeBet.amount;
+								betMessage = `<span style="color:#00FF41; font-weight:bold;">${state.activeBet.isAuto ? '🤖 BOT KAZANDI' : '💰 MANUEL KAZANÇ'}: +$${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+							} else if (actualResult === 0) {
+								state.balance += state.activeBet.amount;
+								betMessage = `<span style="color:#888; font-weight:bold;">İADE: PİYASA EŞİT</span>`;
+							} else {
+								betMessage = `<span style="color:#FF003C; font-weight:bold;">${state.activeBet.isAuto ? '🤖 BOT KAYBETTİ' : '💸 MANUEL KAYIP'}: -$${state.activeBet.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+							}
+							state.activeBet = null;
+						}
+
+						// 2. TAHMİNİ DENETLE
+						if (state.lockedPredictionDirection !== 0) {
+							if (state.lockedPredictionDirection === actualResult) { state.halStats.won++; logResult = 'won'; }
+							else { state.halStats.lost++; logResult = 'lost'; }
+							document.getElementById('hal-score').innerText = `${state.halStats.won}W - ${state.halStats.lost}L`;
+						}
+
+						addHistoryLog({
+							time: prevIntervalStr, marketType: resultType, marketClass: resultClass,
+							marketGap: `${sign}$${Math.abs(resultGap).toFixed(2)}`, result: logResult, betMsg: betMessage
+						});
+
+						updatePortfolioUI();
+
+						// 3. YENİ DÖNEMİ KİLİTLE VE BOTU TETİKLE
+						state.priceToBeat = lastAdjustedPrice;
+						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+						generateLockedPrediction();
+						saveState();
+					}
+					lastSnapshotMinute = minutes;
+				}
+			}
+			// YENİ: Saniye 01'de Bot İşlem Yapsın (Yeni oranlar oturduktan hemen sonra)
+			else if (minutes % 5 === 0 && seconds === 1) {
+				executeAutoTrade();
+			}
+			else if (seconds % 2 === 0) { updateLiveMetrics(); }
+		}
+		setInterval(updateClockTimer, 1000);
+
+		// --- WEBSOCKETS ---
+		const indexWs = new WebSocket('wss://dstream.binance.com/stream?streams=btcusd_perp@markPrice@1s');
+		indexWs.onopen = () => { document.getElementById('index-status-dot').style.background = '#00FF41'; document.getElementById('index-status-text').innerText = 'BAĞLI'; document.getElementById('index-status-text').style.color = '#00FF41'; };
+		indexWs.onmessage = (event) => { if (JSON.parse(event.data).stream === 'btcusd_perp@markPrice@1s') updatePriceDisplay(parseFloat(JSON.parse(event.data).data.p)); };
+
+		const binanceWs = new WebSocket(`wss://stream.binance.com:9443/stream?streams=btcusdt@kline_${interval}`);
+		binanceWs.onopen = () => { document.getElementById('binance-status-dot').style.background = '#00FF41'; document.getElementById('binance-status-text').innerText = 'BAĞLI'; document.getElementById('binance-status-text').style.color = '#00FF41'; };
+		binanceWs.onmessage = (event) => {
+			const data = JSON.parse(event.data).data;
+			if (klineData.length === 0) return;
+			const candle = { time: data.k.t, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) };
+			if (klineData[klineData.length - 1].time === candle.time) { klineData[klineData.length - 1] = candle; }
+			else { klineData.push(candle); if (klineData.length > limit) klineData.shift(); }
+			drawCorrectedCandles();
+		};
+
+		async function fetchHistoricalKlines() {
+			try {
+				loadState();
+				const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`);
+				const data = await res.json();
+				klineData = data.map(k => ({ time: k[0], open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) }));
+
+				if (isAutoPegActive) {
+					document.getElementById('peg-indicator').style.display = "block";
+					await syncWithPythOracle(); autoPegIntervalId = setInterval(syncWithPythOracle, 5000);
+				}
+
+				updateLiveMetrics();
+				if (state.lockedPredictionDirection === 0) generateLockedPrediction();
+				updateClockTimer();
+			} catch (error) { }
+		}
+
+		function drawCorrectedCandles() {
+			if (klineData.length === 0) return;
+			const container = document.getElementById('mum-grafik-container');
+			canvas.width = container.offsetWidth; canvas.height = container.offsetHeight;
+			const w = canvas.width; const h = canvas.height;
+			const margin = 20; const axisWidth = 55; const drawingW = w - axisWidth; const drawingH = h - (margin * 2) - 15;
+
+			ctx.clearRect(0, 0, w, h);
+			const adjustedKlines = klineData.map(d => ({ open: d.open + globalOffset, high: d.high + globalOffset, low: d.low + globalOffset, close: d.close + globalOffset, time: d.time }));
+			const highPrices = adjustedKlines.map(d => d.high); const lowPrices = adjustedKlines.map(d => d.low);
+			let minPrice = Math.min(...lowPrices); let maxPrice = Math.max(...highPrices);
+			let priceRange = maxPrice - minPrice; if (priceRange === 0) priceRange = 100;
+			minPrice -= priceRange * 0.05; maxPrice += priceRange * 0.05; priceRange = maxPrice - minPrice;
+
+			ctx.strokeStyle = '#111'; ctx.lineWidth = 1;
+			for (let i = 0; i <= 5; i++) { const y = margin + drawingH - (drawingH / 5) * i; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(drawingW, y); ctx.stroke(); }
+			ctx.strokeStyle = '#222'; ctx.beginPath(); ctx.moveTo(drawingW, 0); ctx.lineTo(drawingW, h); ctx.stroke();
+
+			const numCandles = adjustedKlines.length; const sectionWidth = drawingW / numCandles;
+			const candleWidth = Math.max(2, Math.min(10, sectionWidth * 0.6));
+
+			adjustedKlines.forEach((d, i) => {
+				const centerX = (i * sectionWidth) + (sectionWidth / 2);
+				const yOpen = margin + drawingH - ((d.open - minPrice) / priceRange) * drawingH;
+				const yHigh = margin + drawingH - ((d.high - minPrice) / priceRange) * drawingH;
+				const yLow = margin + drawingH - ((d.low - minPrice) / priceRange) * drawingH;
+				const yClose = margin + drawingH - ((d.close - minPrice) / priceRange) * drawingH;
+				const isGreen = d.close >= d.open; const candleColor = isGreen ? '#00FF41' : '#FF003C';
+
+				ctx.strokeStyle = candleColor; ctx.fillStyle = candleColor; ctx.lineWidth = 1;
+				ctx.beginPath(); ctx.moveTo(centerX, yHigh); ctx.lineTo(centerX, yLow); ctx.stroke();
+				const bodyTop = Math.min(yOpen, yClose); const bodyHeight = Math.max(1.5, Math.abs(yOpen - yClose));
+				ctx.fillRect(centerX - (candleWidth / 2), bodyTop, candleWidth, bodyHeight);
+
+				if (i % 6 === 0 || i === numCandles - 1) {
+					const date = new Date(d.time); const timeLabel = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+					ctx.font = '9px SF Mono'; ctx.fillStyle = i === numCandles - 1 ? '#00FF41' : '#555';
+					ctx.textAlign = 'center'; ctx.fillText(timeLabel, centerX, h - 10);
+				}
+			});
+
+			ctx.font = '10px SF Mono'; ctx.fillStyle = '#666'; ctx.textAlign = 'left';
+			for (let i = 0; i <= 5; i++) {
+				const price = minPrice + (priceRange / 5) * i; const y = margin + drawingH - (priceRange / 5) * i;
+				ctx.fillText(`$${price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, drawingW + 5, y + 4);
+			}
+		}
+
+		function onPageLoad() { fetchHistoricalKlines(); }
+		window.addEventListener('resize', drawCorrectedCandles);
+	</script>
 </body>
+
 </html>
