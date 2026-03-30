@@ -4,9 +4,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>BTC/USD TouchWiz Quant Bot (Equity Curve Edition)</title>
+	<title>BTC/USD TouchWiz Quant Bot (Self-Learning AI)</title>
 	<style>
-		/* ANDROID 4.4.2 / TOUCHWIZ HOLO DARK THEME */
 		@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 		:root {
@@ -37,11 +36,10 @@
 			flex-direction: column;
 		}
 
-		/* HEADER - ANDROID STATUS BAR VIBE */
 		#header {
 			display: flex;
 			justify-content: space-between;
-			align-items: center;
+			align-items: flex-start;
 			border-bottom: 2px solid var(--border-main);
 			padding-bottom: 10px;
 			margin-bottom: 15px;
@@ -61,7 +59,6 @@
 			font-weight: normal;
 		}
 
-		/* PRICE & BALANCE LINE */
 		.price-line {
 			display: flex;
 			align-items: center;
@@ -70,25 +67,38 @@
 		}
 
 		.main-price {
-			font-size: 48px;
+			font-size: 54px;
 			font-weight: bold;
 			color: var(--text-main);
 			letter-spacing: -1px;
+			transition: color 0.2s ease-in-out;
 		}
 
-		/* TOP BALANCE BOX */
-		.header-balance-box {
+		.header-boxes-container {
+			display: flex;
+			gap: 10px;
+		}
+
+		.header-box {
 			background: #1a1a1a;
 			border: 1px solid var(--border-main);
 			padding: 8px 15px;
 			border-radius: 2px;
-			border-left: 4px solid var(--holo-green);
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
+			min-width: 180px;
 		}
 
-		.bal-title {
+		.header-box.balance {
+			border-left: 4px solid var(--holo-green);
+		}
+
+		.header-box.target {
+			border-left: 4px solid var(--holo-blue);
+		}
+
+		.box-title {
 			font-size: 10px;
 			color: var(--text-muted);
 			text-transform: uppercase;
@@ -96,11 +106,16 @@
 			letter-spacing: 1px;
 		}
 
-		.bal-val {
-			font-size: 26px;
+		.box-val {
+			font-size: 24px;
 			font-weight: bold;
-			color: var(--holo-green);
 			margin-top: 2px;
+		}
+
+		.box-sub {
+			font-size: 12px;
+			margin-top: 3px;
+			font-weight: bold;
 		}
 
 		.timer-box {
@@ -127,7 +142,6 @@
 			color: var(--text-main);
 		}
 
-		/* MAIN LAYOUT */
 		#main-container {
 			display: flex;
 			gap: 15px;
@@ -161,7 +175,6 @@
 			min-width: 0;
 		}
 
-		/* PANELS - TOUCHWIZ STYLE */
 		.panel {
 			background-color: var(--panel-bg);
 			border: 1px solid var(--border-main);
@@ -185,7 +198,6 @@
 			align-items: baseline;
 		}
 
-		/* BOT STATUS */
 		.bot-status-box {
 			background: #1a1a1a;
 			padding: 15px;
@@ -206,14 +218,6 @@
 		.status-fired {
 			border-left-color: var(--holo-green);
 			background: #0a1a0a;
-		}
-
-		/* PORTFOLIO & AUTOPILOT */
-		.balance-row {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 15px;
 		}
 
 		.btn-simple {
@@ -408,34 +412,6 @@
 			justify-content: space-between;
 		}
 
-		/* TARGET ENGINE */
-		.beat-engine-box {
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-		}
-
-		.beat-row {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			background: #222;
-			padding: 10px;
-			border-radius: 2px;
-		}
-
-		.beat-label {
-			font-size: 12px;
-			color: var(--text-muted);
-		}
-
-		.beat-value {
-			font-size: 16px;
-			font-weight: bold;
-			color: var(--text-main);
-		}
-
-		/* HISTORY LOGS */
 		#history-logs {
 			flex-grow: 1;
 			overflow-y: auto;
@@ -444,7 +420,7 @@
 			flex-direction: column;
 			gap: 5px;
 			padding-right: 5px;
-			min-height: 100px;
+			min-height: 150px;
 		}
 
 		.history-entry {
@@ -475,7 +451,6 @@
 			font-size: 11px;
 		}
 
-		/* HAL-9000 HUD */
 		.hal-grid {
 			display: grid;
 			grid-template-columns: repeat(4, 1fr);
@@ -506,9 +481,9 @@
 			justify-content: space-between;
 			align-items: center;
 			background-color: #222;
-			padding: 10px 15px;
+			padding: 15px;
 			border-left: 4px solid var(--holo-blue);
-			margin-bottom: 5px;
+			margin-bottom: 10px;
 		}
 
 		.hal-pred-text {
@@ -518,7 +493,7 @@
 		}
 
 		.hal-pred-value {
-			font-size: 20px;
+			font-size: 24px;
 			font-weight: bold;
 			text-align: right;
 			display: flex;
@@ -527,10 +502,10 @@
 		}
 
 		.hal-confidence {
-			font-size: 11px;
+			font-size: 12px;
 			color: var(--text-muted);
 			font-weight: normal;
-			margin-top: 2px;
+			margin-top: 4px;
 		}
 
 		.hal-pred-up {
@@ -545,7 +520,31 @@
 			color: var(--holo-orange);
 		}
 
-		/* CANVAS - DOUBLE CHARTS */
+		/* YENİ: NEURAL WEIGHTS EKRANI */
+		.neural-weights-box {
+			background: #1a1a1a;
+			border: 1px solid var(--border-main);
+			border-radius: 2px;
+			padding: 10px;
+			display: flex;
+			justify-content: space-between;
+			font-size: 10px;
+			color: var(--text-muted);
+		}
+
+		.neural-weight-item {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 3px;
+		}
+
+		.neural-val {
+			color: var(--holo-blue);
+			font-weight: bold;
+			font-size: 12px;
+		}
+
 		#chart-wrapper {
 			display: flex;
 			flex-direction: column;
@@ -580,7 +579,6 @@
 			height: 100%;
 		}
 
-		/* FOOTER STATUS */
 		#status {
 			display: flex;
 			justify-content: space-between;
@@ -619,13 +617,21 @@
 
 	<div id="header">
 		<div class="header-left">
-			<h1>BTC/USD QUANT AI (Pyth Auto-Peg)</h1>
+			<h1>BTC/USD QUANT AI (Self-Learning ML)</h1>
 			<div class="price-line">
 				<div class="main-price" id="current-price">CONNECTING...</div>
 
-				<div class="header-balance-box">
-					<div class="bal-title">PORTFOLIO BALANCE</div>
-					<div class="bal-val" id="top-balance">$1,000.00</div>
+				<div class="header-boxes-container">
+					<div class="header-box balance">
+						<div class="box-title">PORTFOLIO BALANCE</div>
+						<div class="box-val color-green" id="top-balance">$1,000.00</div>
+					</div>
+
+					<div class="header-box target">
+						<div class="box-title">TARGET (PRICE TO BEAT)</div>
+						<div class="box-val color-blue" id="ptb-val">AWAITING</div>
+						<div class="box-sub color-muted" id="ptb-gap">Gap: --</div>
+					</div>
 				</div>
 			</div>
 			<div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Offset: <span id="offset-display"
@@ -646,22 +652,22 @@
 
 			<div class="panel">
 				<div class="panel-title">Trade Execution</div>
-				<div class="balance-row">
+				<div style="margin-bottom: 15px;">
 					<button class="btn-simple" onclick="addFunds()" style="width: 100%;">+ DEPOSIT $1000</button>
 				</div>
 
 				<div class="auto-trade-switch">
-					<div class="auto-trade-label">Autopilot (Sniper)</div>
+					<div class="auto-trade-label">Autopilot (ML Sniper)</div>
 					<button class="toggle-btn active" id="btn-auto-toggle" onclick="toggleAutoTrade()">ON</button>
 				</div>
 
 				<div class="odds-container">
 					<div class="odds-box">
-						<span class="odds-title">UP SHARE</span>
+						<span class="odds-title">UP ▲ SHARE</span>
 						<span class="odds-val up" id="live-up-odds">$0.50</span>
 					</div>
 					<div class="odds-box">
-						<span class="odds-title">DOWN SHARE</span>
+						<span class="odds-title">DOWN ▼ SHARE</span>
 						<span class="odds-val down" id="live-down-odds">$0.50</span>
 					</div>
 				</div>
@@ -672,8 +678,9 @@
 						<input type="number" id="input-amount" value="100" step="10" min="1">
 					</div>
 					<div class="bet-buttons">
-						<button class="btn-bet btn-up" id="btn-buy-up" onclick="placeBet('UP')">BUY UP</button>
-						<button class="btn-bet btn-down" id="btn-buy-down" onclick="placeBet('DOWN')">BUY DOWN</button>
+						<button class="btn-bet btn-up" id="btn-buy-up" onclick="placeBet('UP')">BUY UP ▲</button>
+						<button class="btn-bet btn-down" id="btn-buy-down" onclick="placeBet('DOWN')">BUY DOWN
+							▼</button>
 					</div>
 				</div>
 
@@ -686,21 +693,7 @@
 				</div>
 			</div>
 
-			<div class="panel">
-				<div class="panel-title">Target Engine</div>
-				<div class="beat-engine-box">
-					<div class="beat-row">
-						<span class="beat-label">Price to Beat:</span>
-						<span class="beat-value" id="ptb-val">AWAITING</span>
-					</div>
-					<div class="beat-row">
-						<span class="beat-label">Delta (Gap):</span>
-						<span class="beat-value color-muted" id="ptb-gap">--</span>
-					</div>
-				</div>
-			</div>
-
-			<div class="panel" style="flex-grow: 1; min-height: 150px;">
+			<div class="panel" style="flex-grow: 1; min-height: 250px;">
 				<div class="panel-title">
 					<span>History Log</span>
 					<span style="font-size:11px; cursor:pointer;" onclick="clearHistory()">CLEAR</span>
@@ -730,19 +723,26 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>HAL-9000 Quant AI</span>
+					<span>HAL-9000 Machine Learning AI</span>
 					<span>Score: <strong id="hal-score" style="color:var(--text-main);">0W - 0L</strong></span>
 				</div>
 
-				<div class="hal-grid">
+				<div class="neural-weights-box">
+					<div class="neural-weight-item"><span>VWAP</span><span class="neural-val" id="w-vwap">2.5</span>
+					</div>
+					<div class="neural-weight-item"><span>EMA</span><span class="neural-val" id="w-ema">2.0</span></div>
+					<div class="neural-weight-item"><span>MACD</span><span class="neural-val" id="w-macd">1.5</span>
+					</div>
+					<div class="neural-weight-item"><span>RSI</span><span class="neural-val" id="w-rsi">1.0</span></div>
+					<div class="neural-weight-item"><span>MOM</span><span class="neural-val" id="w-mom">1.0</span></div>
+					<div class="neural-weight-item"><span>BB</span><span class="neural-val" id="w-bb">1.0</span></div>
+				</div>
+
+				<div class="hal-grid" style="margin-top: 10px;">
 					<div class="hal-metric"><span>RSI (14)</span><strong id="hal-rsi">--</strong></div>
 					<div class="hal-metric"><span>EMA Cross</span><strong id="hal-ema">--</strong></div>
 					<div class="hal-metric"><span>VWAP</span><strong id="hal-vwap">--</strong></div>
-					<div class="hal-metric"><span>Trend Vol</span><strong id="hal-trend">--</strong></div>
 					<div class="hal-metric"><span>Momentum</span><strong id="hal-mom">--</strong></div>
-					<div class="hal-metric"><span>MACD</span><strong id="hal-macd">--</strong></div>
-					<div class="hal-metric"><span>Bollinger</span><strong id="hal-bb">--</strong></div>
-					<div class="hal-metric"><span>Price Action</span><strong id="hal-pa">--</strong></div>
 				</div>
 
 				<div class="hal-prediction-box">
@@ -758,7 +758,7 @@
 
 	<div id="status">
 		<div>Data Stream: <span id="index-status-text" class="color-green">AWAITING</span></div>
-		<div>Memory: <span class="color-green">Local Storage</span></div>
+		<div>Memory: <span class="color-green">Machine Learning Active</span></div>
 	</div>
 
 	<script>
@@ -776,10 +776,10 @@
 		const interval = '5m';
 		const limit = 48;
 
-		// --- LOCAL STORAGE STATE ---
+		// --- LOCAL STORAGE & MACHINE LEARNING STATE ---
 		let state = {
 			balance: 1000.00,
-			balanceHistory: [], // YENİ: Bakiyenin zaman içindeki grafiği için
+			balanceHistory: [],
 			activeBet: null,
 			priceToBeat: 0,
 			halStats: { won: 0, lost: 0 },
@@ -787,7 +787,18 @@
 			lockedConfidence: 0,
 			lockedPredictionHTML: "",
 			historyLogs: [],
-			isAutoTradeActive: true
+			isAutoTradeActive: true,
+			// YENİ: MAKİNE ÖĞRENMESİ AĞIRLIKLARI (NEURAL WEIGHTS)
+			weights: {
+				vwap: 2.5,
+				ema: 2.0,
+				macd: 1.5,
+				rsi: 1.0,
+				mom: 1.0,
+				bb: 1.0
+			},
+			// Son döngüde hangi indikatör ne dedi (Öğrenme için gerekli)
+			lastSignals: { vwap: 0, ema: 0, macd: 0, rsi: 0, mom: 0, bb: 0 }
 		};
 
 		let currentUpOdds = 0.50;
@@ -795,10 +806,11 @@
 		let remainingSecondsGlobal = 300;
 
 		function loadState() {
-			const saved = localStorage.getItem('btcAndroidStateV2');
+			const saved = localStorage.getItem('btcNeuralBotV1');
 			if (saved) {
 				state = JSON.parse(saved);
 				if (state.isAutoTradeActive === undefined) state.isAutoTradeActive = true;
+				if (!state.weights) state.weights = { vwap: 2.5, ema: 2.0, macd: 1.5, rsi: 1.0, mom: 1.0, bb: 1.0 };
 				if (!state.balanceHistory) state.balanceHistory = [];
 				if (state.balanceHistory.length === 0) state.balanceHistory.push({ t: 'START', b: state.balance });
 
@@ -811,22 +823,64 @@
 					else if (state.lockedPredictionDirection === -1) predEl.className = "hal-pred-value hal-pred-down";
 				}
 				renderHistoryLogs();
+				updateWeightsUI();
 			} else {
 				state.balanceHistory.push({ t: 'START', b: state.balance });
 			}
 			syncAutoTradeUI();
 			updatePortfolioUI();
-			drawBalanceChart(); // Grafiği çiz
+			drawBalanceChart();
 		}
 
-		function saveState() { localStorage.setItem('btcAndroidStateV2', JSON.stringify(state)); }
+		function saveState() { localStorage.setItem('btcNeuralBotV1', JSON.stringify(state)); }
 
 		function clearHistory() {
-			if (confirm("Clear all history and reset wallet?")) {
-				state = { balance: 1000, balanceHistory: [{ t: 'START', b: 1000 }], activeBet: null, priceToBeat: 0, halStats: { won: 0, lost: 0 }, lockedPredictionDirection: 0, lockedConfidence: 0, lockedPredictionHTML: "", historyLogs: [], isAutoTradeActive: true };
+			if (confirm("Clear all history, neural weights, and reset wallet?")) {
+				state = {
+					balance: 1000, balanceHistory: [{ t: 'START', b: 1000 }], activeBet: null, priceToBeat: 0,
+					halStats: { won: 0, lost: 0 }, lockedPredictionDirection: 0, lockedConfidence: 0, lockedPredictionHTML: "",
+					historyLogs: [], isAutoTradeActive: true,
+					weights: { vwap: 2.5, ema: 2.0, macd: 1.5, rsi: 1.0, mom: 1.0, bb: 1.0 },
+					lastSignals: { vwap: 0, ema: 0, macd: 0, rsi: 0, mom: 0, bb: 0 }
+				};
 				saveState(); loadState();
 				updateBotStatus("SLEEPING", "");
 			}
+		}
+
+		function updateWeightsUI() {
+			document.getElementById('w-vwap').innerText = state.weights.vwap.toFixed(2);
+			document.getElementById('w-ema').innerText = state.weights.ema.toFixed(2);
+			document.getElementById('w-macd').innerText = state.weights.macd.toFixed(2);
+			document.getElementById('w-rsi').innerText = state.weights.rsi.toFixed(2);
+			document.getElementById('w-mom').innerText = state.weights.mom.toFixed(2);
+			document.getElementById('w-bb').innerText = state.weights.bb.toFixed(2);
+		}
+
+		// --- YENİ: MAKİNE ÖĞRENMESİ (ÖDÜL/CEZA MEKANİZMASI) ---
+		function trainNeuralNetwork(actualResult) {
+			// actualResult: 1 (UP), -1 (DOWN), 0 (FLAT)
+			if (actualResult === 0 || !state.lastSignals) return;
+
+			const learningRate = 0.15; // Öğrenme hızı (Hızlı adaptasyon)
+
+			for (let ind in state.lastSignals) {
+				let signal = state.lastSignals[ind]; // O indikatörün bir önceki el verdiği sinyal (1 veya -1)
+				if (signal === 0) continue;
+
+				if (signal === actualResult) {
+					// İndikatör doğru bildi! Ağırlığını artır.
+					state.weights[ind] += learningRate;
+				} else {
+					// İndikatör yanlış bildi! Ağırlığını düşür.
+					state.weights[ind] -= learningRate;
+				}
+
+				// Sınırlar (Ağırlık çok uçmasın veya sıfırlanmasın)
+				state.weights[ind] = Math.max(0.1, Math.min(state.weights[ind], 5.0));
+			}
+			updateWeightsUI();
+			saveState();
 		}
 
 		// --- UI CONTROLS ---
@@ -838,19 +892,14 @@
 
 		function toggleAutoTrade() {
 			state.isAutoTradeActive = !state.isAutoTradeActive;
-			saveState();
-			syncAutoTradeUI();
-			if (!state.isAutoTradeActive) {
-				updateBotStatus("OFF", "");
-			} else {
-				updateBotStatus("ANALYZING MARKET...", "");
-			}
+			saveState(); syncAutoTradeUI();
+			if (!state.isAutoTradeActive) updateBotStatus("OFF", "");
+			else updateBotStatus("ANALYZING MARKET...", "");
 		}
 
 		function syncAutoTradeUI() {
 			const btn = document.getElementById('btn-auto-toggle');
 			const manualUI = document.getElementById('manual-bet-ui');
-
 			if (state.isAutoTradeActive) {
 				btn.innerText = "ON"; btn.className = "toggle-btn active";
 				manualUI.classList.remove('active');
@@ -870,30 +919,26 @@
 
 			if (p > 0.99) p = 0.99;
 			if (p < 0.01) p = 0.01;
-
 			currentUpOdds = p; currentDownOdds = 1.00 - p;
-
 			document.getElementById('live-up-odds').innerText = `$${currentUpOdds.toFixed(2)}`;
 			document.getElementById('live-down-odds').innerText = `$${currentDownOdds.toFixed(2)}`;
 		}
 
 		// --- PORTFOLIO ---
 		function updatePortfolioUI() {
-			// YENİ: Bakiye artık header'ın yanındaki kutuda
 			document.getElementById('top-balance').innerText = `$${state.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-			const btnUp = document.getElementById('btn-buy-up');
-			const btnDown = document.getElementById('btn-buy-down');
+			const btnUp = document.getElementById('btn-buy-up'); const btnDown = document.getElementById('btn-buy-down');
 			const activeBetCard = document.getElementById('active-bet-display');
 
 			if (state.activeBet) {
 				btnUp.disabled = true; btnDown.disabled = true;
 				activeBetCard.style.display = 'block';
-
-				const colorClass = state.activeBet.type === 'UP' ? 'color-green' : 'color-red';
+				const isUp = state.activeBet.type === 'UP';
+				const colorClass = isUp ? 'color-green' : 'color-red';
+				const icon = isUp ? '▲' : '▼';
 				document.getElementById('active-bet-type-badge').innerText = state.activeBet.isAuto ? "(BOT)" : "(MANUAL)";
 				document.getElementById('active-bet-info').innerHTML = `
-                    <span>DIR: <strong class="${colorClass}">${state.activeBet.type}</strong></span>
+                    <span>DIR: <strong class="${colorClass}">${state.activeBet.type} ${icon}</strong></span>
                     <span>RISK: $${state.activeBet.amount.toFixed(2)}</span>
                     <span>PROFIT: <strong class="color-green">+$${(state.activeBet.payout - state.activeBet.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
                 `;
@@ -924,7 +969,6 @@
 
 			state.balance -= amount;
 			state.activeBet = { type: type, amount: amount, shares: shares, payout: shares * 1.00, lockedOdds: odds, isAuto: isAuto };
-
 			saveState(); updatePortfolioUI();
 		}
 
@@ -946,7 +990,7 @@
 
 		function addHistoryLog(logObj) {
 			state.historyLogs.unshift(logObj);
-			if (state.historyLogs.length > 40) state.historyLogs.pop();
+			if (state.historyLogs.length > 50) state.historyLogs.pop();
 			saveState(); renderHistoryLogs();
 		}
 
@@ -960,15 +1004,6 @@
 					const priceData = data[0].price;
 					const pythPrice = Number(priceData.price) * Math.pow(10, priceData.expo);
 					globalOffset = pythPrice - currentRawPrice;
-					const sign = globalOffset >= 0 ? '+' : '';
-					document.getElementById('offset-display').innerText = `${sign}${globalOffset.toFixed(2)} USD`;
-
-					if (state.priceToBeat > 0 && lastAdjustedPrice > 0) {
-						const oldAdjusted = lastAdjustedPrice; const newAdjusted = currentRawPrice + globalOffset;
-						state.priceToBeat += (newAdjusted - oldAdjusted);
-						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-						saveState();
-					}
 					updatePriceDisplay(currentRawPrice); drawCorrectedCandles();
 				}
 			} catch (error) { }
@@ -988,22 +1023,33 @@
 
 			if (state.priceToBeat > 0) {
 				const gap = adjustedPrice - state.priceToBeat; const gapEl = document.getElementById('ptb-gap');
-				if (gap > 0) { gapEl.innerText = `+$${gap.toFixed(2)} (UP)`; gapEl.className = 'beat-value color-green'; }
-				else if (gap < 0) { gapEl.innerText = `-$${Math.abs(gap).toFixed(2)} (DOWN)`; gapEl.className = 'beat-value color-red'; }
-				else { gapEl.innerText = `$0.00 (FLAT)`; gapEl.className = 'beat-value color-muted'; }
+				if (gap > 0) {
+					gapEl.innerHTML = `Gap: <span class="color-green">+$${gap.toFixed(2)} (UP ▲)</span>`;
+					priceEl.style.color = 'var(--holo-green)';
+				}
+				else if (gap < 0) {
+					gapEl.innerHTML = `Gap: <span class="color-red">-$${Math.abs(gap).toFixed(2)} (DOWN ▼)</span>`;
+					priceEl.style.color = 'var(--holo-red)';
+				}
+				else {
+					gapEl.innerHTML = `Gap: <span class="color-muted">$0.00 (FLAT)</span>`;
+					priceEl.style.color = 'var(--text-main)';
+				}
+			} else {
+				priceEl.style.color = 'var(--text-main)';
 			}
 		}
 
-		// --- HAL-9000 METRICS ---
+		// --- HAL-9000 NEURAL METRICS ---
 		function updateLiveMetrics() {
 			if (klineData.length < 30) return null;
 			const closes = klineData.map(d => d.close + globalOffset);
 			const highs = klineData.map(d => d.high + globalOffset);
 			const lows = klineData.map(d => d.low + globalOffset);
-			const opens = klineData.map(d => d.open + globalOffset);
 			const volumes = klineData.map(d => d.volume);
 			const currentClose = closes[closes.length - 1];
 
+			// VWAP
 			let cumTypicalVol = 0; let cumVol = 0;
 			for (let i = 0; i < closes.length; i++) {
 				const typicalPrice = (highs[i] + lows[i] + closes[i]) / 3;
@@ -1012,72 +1058,87 @@
 			const vwap = cumTypicalVol / cumVol;
 			document.getElementById('hal-vwap').innerHTML = currentClose > vwap ? `<span class="color-green">BULL</span>` : `<span class="color-red">BEAR</span>`;
 
+			// TREND-FOLLOWING RSI
 			let gains = 0, losses = 0;
 			for (let i = closes.length - 14; i < closes.length; i++) { const diff = closes[i] - closes[i - 1]; if (diff >= 0) gains += diff; else losses -= diff; }
 			const rsi = 100 - (100 / (1 + ((gains / 14) / (losses / 14 || 1))));
-			document.getElementById('hal-rsi').innerHTML = rsi > 65 ? `<span class="color-red">${rsi.toFixed(1)}</span>` : (rsi < 35 ? `<span class="color-green">${rsi.toFixed(1)}</span>` : `<span class="color-muted">${rsi.toFixed(1)}</span>`);
+			document.getElementById('hal-rsi').innerHTML = rsi > 55 ? `<span class="color-green">${rsi.toFixed(1)}</span>` : (rsi < 45 ? `<span class="color-red">${rsi.toFixed(1)}</span>` : `<span class="color-muted">${rsi.toFixed(1)}</span>`);
 
+			// EMA
 			const ema9 = closes.slice(-9).reduce((a, b) => a + b, 0) / 9;
 			const ema21 = closes.slice(-21).reduce((a, b) => a + b, 0) / 21;
-			let emaText = `<span class="color-muted">MIXED</span>`;
-			if (ema9 > ema21 * 1.001) emaText = `<span class="color-green">UP CROSS</span>`;
-			if (ema9 < ema21 * 0.999) emaText = `<span class="color-red">DWN CROSS</span>`;
-			document.getElementById('hal-ema').innerHTML = emaText;
+			document.getElementById('hal-ema').innerHTML = ema9 > ema21 ? `<span class="color-green">UP CROSS</span>` : `<span class="color-red">DWN CROSS</span>`;
 
+			// MOMENTUM
 			const momDiff = currentClose - closes[closes.length - 4];
-			document.getElementById('hal-mom').innerHTML = momDiff > 10 ? `<span class="color-green">UP</span>` : (momDiff < -10 ? `<span class="color-red">DOWN</span>` : `<span class="color-muted">FLAT</span>`);
+			document.getElementById('hal-mom').innerHTML = momDiff > 0 ? `<span class="color-green">UP</span>` : `<span class="color-red">DOWN</span>`;
 
-			const avgVol = volumes.slice(-10).reduce((a, b) => a + b, 0) / 10; const currentVol = volumes[volumes.length - 1];
-			const isUpCandle = currentClose > closes[closes.length - 2];
-			document.getElementById('hal-trend').innerHTML = currentVol > avgVol * 1.2 ? (isUpCandle ? `<span class="color-green">BUY PRES</span>` : `<span class="color-red">SELL PRES</span>`) : `<span class="color-muted">WEAK</span>`;
-
+			// MACD
 			const macd = (closes.slice(-12).reduce((a, b) => a + b, 0) / 12) - (closes.slice(-26).reduce((a, b) => a + b, 0) / 26);
-			document.getElementById('hal-macd').innerHTML = macd > 0 ? `<span class="color-green">POSITIVE</span>` : `<span class="color-red">NEGATIVE</span>`;
 
+			// BB
 			const sma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-			document.getElementById('hal-bb').innerHTML = currentClose > sma20 * 1.002 ? `<span class="color-red">TOP</span>` : (currentClose < sma20 * 0.998 ? `<span class="color-green">BOTTOM</span>` : `<span class="color-muted">MID</span>`);
 
-			const prevOpen = opens[opens.length - 2]; const prevClose = closes[closes.length - 2];
-			const prevHigh = highs[highs.length - 2]; const prevLow = lows[lows.length - 2];
-			const body = Math.abs(prevOpen - prevClose);
-			const lowerWick = Math.min(prevOpen, prevClose) - prevLow;
-			let paText = `<span class="color-muted">NORMAL</span>`;
-			if (lowerWick > body * 2 && prevClose > prevOpen) paText = `<span class="color-green">BULL PIN</span>`;
-			else if (body > (highs[highs.length - 2] - lows[lows.length - 2]) * 0.7) paText = prevClose > prevOpen ? `<span class="color-green">STRONG UP</span>` : `<span class="color-red">STRONG DWN</span>`;
-			document.getElementById('hal-pa').innerHTML = paText;
-
-			return { rsi, ema9, ema21, vwap, paText, currentClose, sma20, currentVol, avgVol, momDiff, macd, isUpCandle };
+			return { rsi, ema9, ema21, vwap, currentClose, sma20, momDiff, macd };
 		}
 
 		function generateLockedPrediction() {
 			const metrics = updateLiveMetrics(); if (!metrics) return;
+
+			// YENİ: SİNİRSEL (NEURAL) SİNYAL OLUŞTURUCU
+			let sig = { vwap: 0, ema: 0, macd: 0, rsi: 0, mom: 0, bb: 0 };
+
+			// VWAP (Fiyat üstündeyse UP, altındaysa DOWN)
+			sig.vwap = metrics.currentClose > metrics.vwap ? 1 : -1;
+			// EMA (9 > 21 ise UP, tam tersi DOWN)
+			sig.ema = metrics.ema9 > metrics.ema21 ? 1 : -1;
+			// MACD
+			sig.macd = metrics.macd > 0 ? 1 : -1;
+			// RSI (Trend Following mantığı - Şiştiyse düşer DEĞİL, 50'nin üstündeyse gücü arkasına almıştır)
+			if (metrics.rsi >= 50 && metrics.rsi < 85) sig.rsi = 1;
+			else if (metrics.rsi < 50 && metrics.rsi > 15) sig.rsi = -1;
+			else if (metrics.rsi >= 85) sig.rsi = -1; // Çok aşırı şiştiyse geri döner
+			else if (metrics.rsi <= 15) sig.rsi = 1;
+			// MOMENTUM
+			sig.mom = metrics.momDiff > 0 ? 1 : -1;
+			// BOLLINGER (Trend içi kalma)
+			sig.bb = metrics.currentClose > metrics.sma20 ? 1 : -1;
+
+			// Öğrenme mekanizması için sinyalleri kaydet
+			state.lastSignals = sig;
+
+			// Ağırlıklandırılmış Skor Hesaplama
 			let score = 0;
+			let w = state.weights;
+			score += sig.vwap * w.vwap;
+			score += sig.ema * w.ema;
+			score += sig.macd * w.macd;
+			score += sig.rsi * w.rsi;
+			score += sig.mom * w.mom;
+			score += sig.bb * w.bb;
 
-			if (metrics.currentClose > metrics.vwap) score += 2.5; else score -= 2.5;
-			if (metrics.ema9 > metrics.ema21) score += 2; else score -= 2;
-			if (metrics.macd > 0) score += 1.5; else score -= 1.5;
-			if (metrics.rsi < 45) score += 1.5; else if (metrics.rsi > 55) score -= 1.5;
-			if (metrics.momDiff > 5) score += 1; else if (metrics.momDiff < -5) score -= 1;
-			if (metrics.currentClose < metrics.sma20 * 0.998) score += 1; else if (metrics.currentClose > metrics.sma20 * 1.002) score -= 1;
+			let maxPossibleScore = w.vwap + w.ema + w.macd + w.rsi + w.mom + w.bb;
 
-			const absoluteScore = Math.abs(score);
-			let confidence = 50 + (absoluteScore * 5);
+			let confidence = 50 + (Math.abs(score) / maxPossibleScore) * 45;
 			if (confidence > 95) confidence = 95;
 
 			const predEl = document.getElementById('hal-prediction');
 			state.lockedConfidence = confidence;
 
-			if (score >= 2.5) {
+			// Eğer toplam sinyal gücü %15'in üstündeyse tetiğe bas, yoksa bekle (0.15 threshold)
+			const threshold = maxPossibleScore * 0.15;
+
+			if (score >= threshold) {
 				state.lockedPredictionDirection = 1;
-				state.lockedPredictionHTML = `UP <span class="hal-confidence">${confidence.toFixed(1)}%</span>`;
+				state.lockedPredictionHTML = `UP ▲ <span class="hal-confidence">${confidence.toFixed(1)}%</span>`;
 				predEl.className = "hal-pred-value hal-pred-up";
-			} else if (score <= -2.5) {
+			} else if (score <= -threshold) {
 				state.lockedPredictionDirection = -1;
-				state.lockedPredictionHTML = `DOWN <span class="hal-confidence">${confidence.toFixed(1)}%</span>`;
+				state.lockedPredictionHTML = `DOWN ▼ <span class="hal-confidence">${confidence.toFixed(1)}%</span>`;
 				predEl.className = "hal-pred-value hal-pred-down";
 			} else {
 				state.lockedPredictionDirection = 0;
-				state.lockedPredictionHTML = `WAIT <span class="hal-confidence">RISKY</span>`;
+				state.lockedPredictionHTML = `WAIT <span class="hal-confidence">NO TREND</span>`;
 				predEl.className = "hal-pred-value hal-pred-wait";
 			}
 			predEl.innerHTML = state.lockedPredictionHTML; saveState();
@@ -1114,8 +1175,8 @@
 			const dir = state.lockedPredictionDirection;
 
 			let isPerfectEntry = false;
-			if (dir === 1 && gap <= 3) isPerfectEntry = true;
-			if (dir === -1 && gap >= -3) isPerfectEntry = true;
+			if (dir === 1 && gap <= 2) isPerfectEntry = true;
+			if (dir === -1 && gap >= -2) isPerfectEntry = true;
 
 			if (isPerfectEntry) {
 				updateBotStatus("<span class='color-green'>FIRED (PERFECT ENTRY)</span>", "status-fired");
@@ -1171,7 +1232,7 @@
 
 						const resultGap = lastAdjustedPrice - state.priceToBeat;
 						const actualResult = resultGap > 0 ? 1 : (resultGap < 0 ? -1 : 0);
-						const resultType = resultGap > 0 ? 'UP' : (resultGap < 0 ? 'DOWN' : 'FLAT');
+						const resultType = resultGap > 0 ? 'UP ▲' : (resultGap < 0 ? 'DOWN ▼' : 'FLAT');
 						const resultClass = resultGap > 0 ? 'color-green' : (resultGap < 0 ? 'color-red' : '');
 						const sign = resultGap > 0 ? '+' : '';
 
@@ -1182,16 +1243,19 @@
 						let logResult = 'neutral';
 						let betMessage = '';
 
+						// YENİ: MAKİNE ÖĞRENMESİ AĞIRLIKLARI GÜNCELLE!
+						trainNeuralNetwork(actualResult);
+
 						if (state.activeBet) {
 							if ((state.activeBet.type === 'UP' && actualResult === 1) || (state.activeBet.type === 'DOWN' && actualResult === -1)) {
 								state.balance += state.activeBet.payout;
 								const netProfit = state.activeBet.payout - state.activeBet.amount;
-								betMessage = `<span class="color-green" style="font-weight:bold;">${state.activeBet.isAuto ? 'BOT WIN' : 'MANUAL WIN'}: +$${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+								betMessage = `<span class="color-green" style="font-weight:bold;">${state.activeBet.isAuto ? 'BOT WIN ▲' : 'MANUAL WIN ▲'}: +$${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
 							} else if (actualResult === 0) {
 								state.balance += state.activeBet.amount;
 								betMessage = `<span class="color-muted" style="font-weight:bold;">REFUND: TIE</span>`;
 							} else {
-								betMessage = `<span class="color-red" style="font-weight:bold;">${state.activeBet.isAuto ? 'BOT LOSS' : 'MANUAL LOSS'}: -$${state.activeBet.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+								betMessage = `<span class="color-red" style="font-weight:bold;">${state.activeBet.isAuto ? 'BOT LOSS ▼' : 'MANUAL LOSS ▼'}: -$${state.activeBet.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
 							}
 							state.activeBet = null;
 						}
@@ -1207,12 +1271,11 @@
 							marketGap: `${sign}$${Math.abs(resultGap).toFixed(2)}`, result: logResult, betMsg: betMessage
 						});
 
-						// YENİ: Bakiyeyi grafiğe kaydet (Sadece 5 dakikada bir)
 						state.balanceHistory.push({ t: formatTime(hours, minutes), b: state.balance });
 						if (state.balanceHistory.length > 50) state.balanceHistory.shift();
 
 						updatePortfolioUI();
-						drawBalanceChart(); // Grafiği güncelle
+						drawBalanceChart();
 
 						state.priceToBeat = lastAdjustedPrice;
 						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1261,13 +1324,12 @@
 			} catch (error) { }
 		}
 
-		// 1. MUM GRAFİĞİ (ESKİ)
 		function drawCorrectedCandles() {
 			if (klineData.length === 0) return;
 			const container = document.getElementById('mum-grafik-container');
 			canvasCandle.width = container.offsetWidth; canvasCandle.height = container.offsetHeight;
 			const w = canvasCandle.width; const h = canvasCandle.height;
-			const margin = 20; const axisWidth = 55; const drawingW = w - axisWidth; const drawingH = h - (margin * 2);
+			const margin = 20; const axisWidth = 55; const drawingW = w - axisWidth; const drawingH = h - (margin * 2) - 15;
 
 			ctxCandle.clearRect(0, 0, w, h);
 			const adjustedKlines = klineData.map(d => ({ open: d.open + globalOffset, high: d.high + globalOffset, low: d.low + globalOffset, close: d.close + globalOffset, time: d.time }));
@@ -1310,7 +1372,6 @@
 			}
 		}
 
-		// 2. YENİ: ÇİZGİ GRAFİK (EQUITY CURVE)
 		function drawBalanceChart() {
 			if (!state.balanceHistory || state.balanceHistory.length === 0) return;
 			const container = document.getElementById('balance-grafik-container');
@@ -1326,7 +1387,6 @@
 			if (range === 0) { minB *= 0.9; maxB *= 1.1; range = maxB - minB; }
 			if (range === 0) { range = 100; minB = 0; maxB = 100; }
 
-			// Grid
 			ctxBalance.fillStyle = '#888'; ctxBalance.font = '10px Roboto'; ctxBalance.textAlign = 'left';
 			ctxBalance.strokeStyle = '#222'; ctxBalance.lineWidth = 1;
 			for (let i = 0; i <= 2; i++) {
@@ -1336,9 +1396,8 @@
 				ctxBalance.beginPath(); ctxBalance.moveTo(0, y); ctxBalance.lineTo(drawingW, y); ctxBalance.stroke();
 			}
 
-			// Çizgi
 			ctxBalance.beginPath();
-			ctxBalance.strokeStyle = '#33b5e5'; // Holo Blue
+			ctxBalance.strokeStyle = '#33b5e5';
 			ctxBalance.lineWidth = 2;
 
 			const stepX = state.balanceHistory.length > 1 ? drawingW / (state.balanceHistory.length - 1) : drawingW;
@@ -1351,7 +1410,6 @@
 			});
 			ctxBalance.stroke();
 
-			// İçi boş/degrade dolgu
 			ctxBalance.lineTo(drawingW, margin + drawingH);
 			ctxBalance.lineTo(0, margin + drawingH);
 			ctxBalance.closePath();
