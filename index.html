@@ -4,8 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>BTC/USD TouchWiz Quant Bot (Self-Learning AI)</title>
+	<title>BTC/USD TouchWiz Quant Bot (Interactive Chart V2)</title>
 	<style>
+		/* ANDROID 4.4.2 / TOUCHWIZ HOLO DARK THEME */
 		@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 		:root {
@@ -42,7 +43,7 @@
 			align-items: flex-start;
 			border-bottom: 2px solid var(--border-main);
 			padding-bottom: 10px;
-			margin-bottom: 15px;
+			margin-bottom: 10px;
 			flex-shrink: 0;
 		}
 
@@ -153,7 +154,7 @@
 			width: 360px;
 			display: flex;
 			flex-direction: column;
-			gap: 15px;
+			gap: 10px;
 			flex-shrink: 0;
 			overflow-y: auto;
 			padding-right: 5px;
@@ -171,14 +172,14 @@
 			flex-grow: 1;
 			display: flex;
 			flex-direction: column;
-			gap: 15px;
+			gap: 10px;
 			min-width: 0;
 		}
 
 		.panel {
 			background-color: var(--panel-bg);
 			border: 1px solid var(--border-main);
-			padding: 15px;
+			padding: 12px;
 			border-radius: 4px;
 			display: flex;
 			flex-direction: column;
@@ -200,10 +201,10 @@
 
 		.bot-status-box {
 			background: #1a1a1a;
-			padding: 15px;
+			padding: 12px;
 			border: 1px solid var(--border-main);
 			text-align: center;
-			font-size: 14px;
+			font-size: 13px;
 			color: var(--text-main);
 			font-weight: bold;
 			text-transform: uppercase;
@@ -220,6 +221,7 @@
 			background: #0a1a0a;
 		}
 
+		/* HOVER SCALE EFFECTS ADDED */
 		.btn-simple {
 			background: #222;
 			color: var(--text-main);
@@ -229,10 +231,12 @@
 			cursor: pointer;
 			border-radius: 2px;
 			font-weight: bold;
+			transition: all 0.2s ease;
 		}
 
 		.btn-simple:hover {
 			background: #333;
+			transform: scale(1.05);
 		}
 
 		.auto-trade-switch {
@@ -240,14 +244,14 @@
 			justify-content: space-between;
 			align-items: center;
 			background: #222;
-			padding: 12px;
+			padding: 10px;
 			border-radius: 2px;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 			border: 1px solid var(--border-main);
 		}
 
 		.auto-trade-label {
-			font-size: 14px;
+			font-size: 13px;
 			font-weight: bold;
 			color: var(--text-main);
 		}
@@ -256,11 +260,12 @@
 			background: #333;
 			color: var(--text-muted);
 			border: none;
-			padding: 8px 20px;
-			font-size: 14px;
+			padding: 6px 16px;
+			font-size: 13px;
 			font-weight: bold;
 			cursor: pointer;
 			border-radius: 2px;
+			transition: all 0.2s ease;
 		}
 
 		.toggle-btn.active {
@@ -268,11 +273,15 @@
 			color: #000;
 		}
 
+		.toggle-btn:hover {
+			transform: scale(1.05);
+		}
+
 		.odds-container {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 10px;
-			margin-bottom: 10px;
+			gap: 8px;
+			margin-bottom: 8px;
 			text-align: center;
 		}
 
@@ -280,19 +289,19 @@
 			background: #222;
 			border: 1px solid var(--border-main);
 			border-radius: 2px;
-			padding: 10px;
+			padding: 8px;
 			display: flex;
 			flex-direction: column;
-			gap: 5px;
+			gap: 4px;
 		}
 
 		.odds-title {
-			font-size: 11px;
+			font-size: 10px;
 			color: var(--text-muted);
 		}
 
 		.odds-val {
-			font-size: 20px;
+			font-size: 18px;
 			font-weight: bold;
 		}
 
@@ -306,7 +315,7 @@
 
 		.manual-bet-cover {
 			display: none;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 		}
 
 		.manual-bet-cover.active {
@@ -316,11 +325,11 @@
 		.bet-input-group {
 			display: flex;
 			flex-direction: column;
-			gap: 5px;
+			gap: 4px;
 		}
 
 		.bet-input-group label {
-			font-size: 12px;
+			font-size: 11px;
 			color: var(--text-muted);
 			display: flex;
 			justify-content: space-between;
@@ -330,10 +339,11 @@
 			background: #222;
 			border: 1px solid var(--border-main);
 			color: var(--text-main);
-			padding: 10px;
+			padding: 8px;
 			font-size: 16px;
 			outline: none;
 			border-radius: 2px;
+			transition: all 0.2s;
 		}
 
 		.bet-input-group input:focus {
@@ -343,26 +353,28 @@
 		.bet-buttons {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 10px;
-			margin-top: 10px;
+			gap: 8px;
+			margin-top: 8px;
 		}
 
 		.btn-bet {
-			padding: 15px 5px;
+			padding: 12px 5px;
 			border: none;
 			border-radius: 2px;
-			font-size: 14px;
+			font-size: 13px;
 			font-weight: bold;
 			cursor: pointer;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			gap: 5px;
+			gap: 4px;
+			transition: all 0.2s ease;
 		}
 
 		.btn-bet:disabled {
 			opacity: 0.3;
 			cursor: not-allowed;
+			transform: none !important;
 		}
 
 		.btn-up {
@@ -374,6 +386,7 @@
 		.btn-up:hover:not(:disabled) {
 			background: var(--holo-green);
 			color: #000;
+			transform: scale(1.05);
 		}
 
 		.btn-down {
@@ -385,28 +398,29 @@
 		.btn-down:hover:not(:disabled) {
 			background: var(--holo-red);
 			color: #fff;
+			transform: scale(1.05);
 		}
 
 		.active-bet-card {
 			background: #222;
 			border-left: 4px solid var(--holo-orange);
-			padding: 12px;
+			padding: 10px;
 			border-radius: 2px;
-			margin-top: 10px;
+			margin-top: 8px;
 			display: none;
 		}
 
 		.active-bet-title {
-			font-size: 12px;
+			font-size: 11px;
 			color: var(--holo-orange);
 			font-weight: bold;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 			display: flex;
 			justify-content: space-between;
 		}
 
 		.active-bet-details {
-			font-size: 14px;
+			font-size: 13px;
 			color: var(--text-main);
 			display: flex;
 			justify-content: space-between;
@@ -415,21 +429,29 @@
 		#history-logs {
 			flex-grow: 1;
 			overflow-y: auto;
-			font-size: 12px;
+			font-size: 11px;
 			display: flex;
 			flex-direction: column;
-			gap: 5px;
+			gap: 4px;
 			padding-right: 5px;
-			min-height: 150px;
+			min-height: 100px;
+		}
+
+		#history-logs::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		#history-logs::-webkit-scrollbar-thumb {
+			background: var(--border-main);
 		}
 
 		.history-entry {
 			background-color: #222;
 			border-left: 3px solid var(--text-muted);
-			padding: 10px;
+			padding: 8px;
 			display: flex;
 			flex-direction: column;
-			gap: 5px;
+			gap: 4px;
 		}
 
 		.history-entry.won {
@@ -448,103 +470,10 @@
 
 		.hist-time {
 			color: var(--text-muted);
-			font-size: 11px;
-		}
-
-		.hal-grid {
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-			gap: 10px;
-			margin-bottom: 10px;
-		}
-
-		.hal-metric {
-			background-color: #222;
-			padding: 10px;
-			border-radius: 2px;
-		}
-
-		.hal-metric span {
-			display: block;
-			color: var(--text-muted);
-			margin-bottom: 5px;
-			font-size: 11px;
-		}
-
-		.hal-metric strong {
-			font-size: 13px;
-			color: var(--text-main);
-		}
-
-		.hal-prediction-box {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			background-color: #222;
-			padding: 15px;
-			border-left: 4px solid var(--holo-blue);
-			margin-bottom: 10px;
-		}
-
-		.hal-pred-text {
-			font-size: 14px;
-			color: var(--text-main);
-			font-weight: bold;
-		}
-
-		.hal-pred-value {
-			font-size: 24px;
-			font-weight: bold;
-			text-align: right;
-			display: flex;
-			flex-direction: column;
-			align-items: flex-end;
-		}
-
-		.hal-confidence {
-			font-size: 12px;
-			color: var(--text-muted);
-			font-weight: normal;
-			margin-top: 4px;
-		}
-
-		.hal-pred-up {
-			color: var(--holo-green);
-		}
-
-		.hal-pred-down {
-			color: var(--holo-red);
-		}
-
-		.hal-pred-wait {
-			color: var(--holo-orange);
-		}
-
-		/* YENİ: NEURAL WEIGHTS EKRANI */
-		.neural-weights-box {
-			background: #1a1a1a;
-			border: 1px solid var(--border-main);
-			border-radius: 2px;
-			padding: 10px;
-			display: flex;
-			justify-content: space-between;
 			font-size: 10px;
-			color: var(--text-muted);
 		}
 
-		.neural-weight-item {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 3px;
-		}
-
-		.neural-val {
-			color: var(--holo-blue);
-			font-weight: bold;
-			font-size: 12px;
-		}
-
+		/* DOUBLE CHARTS WITH TIMEFRAME BUTTONS */
 		#chart-wrapper {
 			display: flex;
 			flex-direction: column;
@@ -579,15 +508,183 @@
 			height: 100%;
 		}
 
+		.tf-controls {
+			display: flex;
+			gap: 5px;
+		}
+
+		.tf-btn {
+			background: #222;
+			border: 1px solid var(--border-main);
+			color: var(--text-muted);
+			padding: 2px 8px;
+			font-size: 10px;
+			cursor: pointer;
+			border-radius: 2px;
+			font-weight: bold;
+			transition: all 0.2s ease;
+		}
+
+		.tf-btn.active {
+			background: var(--holo-blue);
+			color: #000;
+			border-color: var(--holo-blue);
+		}
+
+		.tf-btn:hover:not(.active) {
+			background: #333;
+			transform: scale(1.1);
+			color: var(--text-main);
+		}
+
+		/* BOTTOM PANELS WRAPPER */
+		.bottom-panels-wrapper {
+			display: flex;
+			gap: 10px;
+			flex-shrink: 0;
+			height: 260px;
+		}
+
+		.hal-panel {
+			flex: 2;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+
+		.hal-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 8px;
+			margin-bottom: 5px;
+		}
+
+		.hal-metric {
+			background-color: #222;
+			padding: 8px;
+			border-radius: 2px;
+		}
+
+		.hal-metric span {
+			display: block;
+			color: var(--text-muted);
+			margin-bottom: 3px;
+			font-size: 10px;
+		}
+
+		.hal-metric strong {
+			font-size: 12px;
+			color: var(--text-main);
+		}
+
+		.neural-weights-box {
+			background: #1a1a1a;
+			border: 1px solid var(--border-main);
+			border-radius: 2px;
+			padding: 6px;
+			display: flex;
+			justify-content: space-between;
+			font-size: 9px;
+			color: var(--text-muted);
+			margin-bottom: 8px;
+		}
+
+		.neural-weight-item {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 2px;
+		}
+
+		.neural-val {
+			color: var(--holo-blue);
+			font-weight: bold;
+			font-size: 11px;
+		}
+
+		.hal-prediction-box {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: #222;
+			padding: 12px 15px;
+			border-left: 4px solid var(--holo-blue);
+			margin-bottom: 5px;
+		}
+
+		.hal-pred-text {
+			font-size: 13px;
+			color: var(--text-main);
+			font-weight: bold;
+		}
+
+		.hal-pred-value {
+			font-size: 22px;
+			font-weight: bold;
+			text-align: right;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+		}
+
+		.hal-confidence {
+			font-size: 11px;
+			color: var(--text-muted);
+			font-weight: normal;
+			margin-top: 2px;
+		}
+
+		.live-trades-panel {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			min-width: 220px;
+		}
+
+		.trades-list {
+			flex-grow: 1;
+			overflow-y: hidden;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			font-family: 'Courier New', Courier, monospace;
+			font-size: 11px;
+		}
+
+		.trade-item {
+			display: flex;
+			justify-content: space-between;
+			padding: 4px 0;
+			border-bottom: 1px solid #222;
+		}
+
+		.trade-time {
+			color: var(--text-muted);
+			width: 60px;
+		}
+
+		.trade-price {
+			font-weight: bold;
+			text-align: right;
+			flex-grow: 1;
+		}
+
+		.trade-qty {
+			color: var(--text-main);
+			width: 60px;
+			text-align: right;
+		}
+
 		#status {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			font-size: 12px;
+			font-size: 11px;
 			color: var(--text-muted);
 			border-top: 1px solid var(--border-main);
-			padding-top: 10px;
-			margin-top: 10px;
+			padding-top: 8px;
+			margin-top: 5px;
 			flex-shrink: 0;
 		}
 
@@ -617,7 +714,7 @@
 
 	<div id="header">
 		<div class="header-left">
-			<h1>BTC/USD QUANT AI (Self-Learning ML)</h1>
+			<h1>BTC/USD QUANT AI (TACTICAL CHART)</h1>
 			<div class="price-line">
 				<div class="main-price" id="current-price">CONNECTING...</div>
 
@@ -634,7 +731,7 @@
 					</div>
 				</div>
 			</div>
-			<div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Offset: <span id="offset-display"
+			<div style="font-size:11px; color:var(--text-muted); margin-top:3px;">Offset: <span id="offset-display"
 					class="color-green">+0.00 USD</span></div>
 		</div>
 
@@ -652,7 +749,7 @@
 
 			<div class="panel">
 				<div class="panel-title">Trade Execution</div>
-				<div style="margin-bottom: 15px;">
+				<div style="margin-bottom: 10px;">
 					<button class="btn-simple" onclick="addFunds()" style="width: 100%;">+ DEPOSIT $1000</button>
 				</div>
 
@@ -693,7 +790,7 @@
 				</div>
 			</div>
 
-			<div class="panel" style="flex-grow: 1; min-height: 250px;">
+			<div class="panel" style="flex-grow: 1; min-height: 150px;">
 				<div class="panel-title">
 					<span>History Log</span>
 					<span style="font-size:11px; cursor:pointer;" onclick="clearHistory()">CLEAR</span>
@@ -706,7 +803,15 @@
 
 			<div id="chart-wrapper">
 				<div class="panel" style="flex-grow: 2; padding-bottom: 0;">
-					<div class="panel-title">Bitcoin 5m Candlesticks</div>
+					<div class="panel-title">
+						<span>Interactive 5m Candlesticks</span>
+						<div class="tf-controls">
+							<button class="tf-btn active" onclick="changeTimeframe(288, this)">24H</button>
+							<button class="tf-btn" onclick="changeTimeframe(192, this)">16H</button>
+							<button class="tf-btn" onclick="changeTimeframe(96, this)">8H</button>
+							<button class="tf-btn" onclick="changeTimeframe(48, this)">4H</button>
+						</div>
+					</div>
 					<div class="canvas-container" id="mum-grafik-container" style="border:none;">
 						<canvas id="mum-grafik-canvas"></canvas>
 					</div>
@@ -721,37 +826,56 @@
 				</div>
 			</div>
 
-			<div class="panel">
-				<div class="panel-title">
-					<span>HAL-9000 Machine Learning AI</span>
-					<span>Score: <strong id="hal-score" style="color:var(--text-main);">0W - 0L</strong></span>
+			<div class="bottom-panels-wrapper">
+
+				<div class="panel hal-panel">
+					<div class="panel-title" style="margin-bottom: 5px;">
+						<span>HAL-9000 Machine Learning</span>
+						<span>Score: <strong id="hal-score" style="color:var(--text-main);">0W - 0L</strong></span>
+					</div>
+
+					<div class="neural-weights-box">
+						<div class="neural-weight-item"><span>VWAP</span><span class="neural-val" id="w-vwap">2.5</span>
+						</div>
+						<div class="neural-weight-item"><span>EMA</span><span class="neural-val" id="w-ema">2.0</span>
+						</div>
+						<div class="neural-weight-item"><span>MACD</span><span class="neural-val" id="w-macd">1.5</span>
+						</div>
+						<div class="neural-weight-item"><span>RSI</span><span class="neural-val" id="w-rsi">1.0</span>
+						</div>
+						<div class="neural-weight-item"><span>MOM</span><span class="neural-val" id="w-mom">1.0</span>
+						</div>
+						<div class="neural-weight-item"><span>BB</span><span class="neural-val" id="w-bb">1.0</span>
+						</div>
+					</div>
+
+					<div class="hal-grid">
+						<div class="hal-metric"><span>RSI (14)</span><strong id="hal-rsi">--</strong></div>
+						<div class="hal-metric"><span>EMA Cross</span><strong id="hal-ema">--</strong></div>
+						<div class="hal-metric"><span>VWAP</span><strong id="hal-vwap">--</strong></div>
+						<div class="hal-metric"><span>Momentum</span><strong id="hal-mom">--</strong></div>
+					</div>
+
+					<div class="hal-prediction-box" style="flex-grow:1; display:flex; align-items:center;">
+						<div class="hal-pred-text">Active Decision:</div>
+						<div class="hal-pred-value hal-pred-wait" id="hal-prediction">
+							CALCULATING...
+							<span class="hal-confidence" id="hal-confidence">Gathering Data</span>
+						</div>
+					</div>
 				</div>
 
-				<div class="neural-weights-box">
-					<div class="neural-weight-item"><span>VWAP</span><span class="neural-val" id="w-vwap">2.5</span>
+				<div class="panel live-trades-panel">
+					<div class="panel-title" style="margin-bottom: 5px;">
+						<span>Live Order Flow</span>
+						<span style="font-size: 10px; font-weight:normal;" class="color-muted">SPOT</span>
 					</div>
-					<div class="neural-weight-item"><span>EMA</span><span class="neural-val" id="w-ema">2.0</span></div>
-					<div class="neural-weight-item"><span>MACD</span><span class="neural-val" id="w-macd">1.5</span>
+					<div class="trades-list" id="trades-list">
+						<div style="color:var(--text-muted); text-align:center; margin-top:20px;">Waiting for trades...
+						</div>
 					</div>
-					<div class="neural-weight-item"><span>RSI</span><span class="neural-val" id="w-rsi">1.0</span></div>
-					<div class="neural-weight-item"><span>MOM</span><span class="neural-val" id="w-mom">1.0</span></div>
-					<div class="neural-weight-item"><span>BB</span><span class="neural-val" id="w-bb">1.0</span></div>
 				</div>
 
-				<div class="hal-grid" style="margin-top: 10px;">
-					<div class="hal-metric"><span>RSI (14)</span><strong id="hal-rsi">--</strong></div>
-					<div class="hal-metric"><span>EMA Cross</span><strong id="hal-ema">--</strong></div>
-					<div class="hal-metric"><span>VWAP</span><strong id="hal-vwap">--</strong></div>
-					<div class="hal-metric"><span>Momentum</span><strong id="hal-mom">--</strong></div>
-				</div>
-
-				<div class="hal-prediction-box">
-					<div class="hal-pred-text">Active Decision:</div>
-					<div class="hal-pred-value hal-pred-wait" id="hal-prediction">
-						CALCULATING...
-						<span class="hal-confidence" id="hal-confidence">Gathering Data</span>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>
@@ -764,6 +888,7 @@
 	<script>
 		const priceEl = document.getElementById('current-price');
 		const historyLogsEl = document.getElementById('history-logs');
+		const tradesListEl = document.getElementById('trades-list');
 		const canvasCandle = document.getElementById('mum-grafik-canvas');
 		const ctxCandle = canvasCandle.getContext('2d');
 		const canvasBalance = document.getElementById('balance-grafik-canvas');
@@ -774,9 +899,9 @@
 		let globalOffset = 0;
 		let klineData = [];
 		const interval = '5m';
-		const limit = 48;
+		let currentChartLimit = 288; // Default 24H (288 candles)
 
-		// --- LOCAL STORAGE & MACHINE LEARNING STATE ---
+		// --- LOCAL STORAGE & ML STATE ---
 		let state = {
 			balance: 1000.00,
 			balanceHistory: [],
@@ -788,16 +913,7 @@
 			lockedPredictionHTML: "",
 			historyLogs: [],
 			isAutoTradeActive: true,
-			// YENİ: MAKİNE ÖĞRENMESİ AĞIRLIKLARI (NEURAL WEIGHTS)
-			weights: {
-				vwap: 2.5,
-				ema: 2.0,
-				macd: 1.5,
-				rsi: 1.0,
-				mom: 1.0,
-				bb: 1.0
-			},
-			// Son döngüde hangi indikatör ne dedi (Öğrenme için gerekli)
+			weights: { vwap: 2.5, ema: 2.0, macd: 1.5, rsi: 1.0, mom: 1.0, bb: 1.0 },
 			lastSignals: { vwap: 0, ema: 0, macd: 0, rsi: 0, mom: 0, bb: 0 }
 		};
 
@@ -805,8 +921,18 @@
 		let currentDownOdds = 0.50;
 		let remainingSecondsGlobal = 300;
 
+		// --- TIMEFRAME LOGIC ---
+		function changeTimeframe(limit, btnElement) {
+			document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('active'));
+			btnElement.classList.add('active');
+			currentChartLimit = limit;
+			klineData = []; // Clear current data
+			ctxCandle.clearRect(0, 0, canvasCandle.width, canvasCandle.height);
+			fetchHistoricalKlines(); // Re-fetch
+		}
+
 		function loadState() {
-			const saved = localStorage.getItem('btcNeuralBotV1');
+			const saved = localStorage.getItem('btcNeuralBotInteractive');
 			if (saved) {
 				state = JSON.parse(saved);
 				if (state.isAutoTradeActive === undefined) state.isAutoTradeActive = true;
@@ -832,7 +958,7 @@
 			drawBalanceChart();
 		}
 
-		function saveState() { localStorage.setItem('btcNeuralBotV1', JSON.stringify(state)); }
+		function saveState() { localStorage.setItem('btcNeuralBotInteractive', JSON.stringify(state)); }
 
 		function clearHistory() {
 			if (confirm("Clear all history, neural weights, and reset wallet?")) {
@@ -857,33 +983,19 @@
 			document.getElementById('w-bb').innerText = state.weights.bb.toFixed(2);
 		}
 
-		// --- YENİ: MAKİNE ÖĞRENMESİ (ÖDÜL/CEZA MEKANİZMASI) ---
 		function trainNeuralNetwork(actualResult) {
-			// actualResult: 1 (UP), -1 (DOWN), 0 (FLAT)
 			if (actualResult === 0 || !state.lastSignals) return;
-
-			const learningRate = 0.15; // Öğrenme hızı (Hızlı adaptasyon)
-
+			const learningRate = 0.15;
 			for (let ind in state.lastSignals) {
-				let signal = state.lastSignals[ind]; // O indikatörün bir önceki el verdiği sinyal (1 veya -1)
+				let signal = state.lastSignals[ind];
 				if (signal === 0) continue;
-
-				if (signal === actualResult) {
-					// İndikatör doğru bildi! Ağırlığını artır.
-					state.weights[ind] += learningRate;
-				} else {
-					// İndikatör yanlış bildi! Ağırlığını düşür.
-					state.weights[ind] -= learningRate;
-				}
-
-				// Sınırlar (Ağırlık çok uçmasın veya sıfırlanmasın)
+				if (signal === actualResult) state.weights[ind] += learningRate;
+				else state.weights[ind] -= learningRate;
 				state.weights[ind] = Math.max(0.1, Math.min(state.weights[ind], 5.0));
 			}
-			updateWeightsUI();
-			saveState();
+			updateWeightsUI(); saveState();
 		}
 
-		// --- UI CONTROLS ---
 		function updateBotStatus(text, className) {
 			const statusEl = document.getElementById('hal-bot-status');
 			statusEl.innerHTML = `BOT STATUS: ${text}`;
@@ -909,7 +1021,6 @@
 			}
 		}
 
-		// --- DYNAMIC AMM ---
 		function calculateDynamicOdds() {
 			if (state.priceToBeat === 0 || lastAdjustedPrice === 0) return;
 			const gap = lastAdjustedPrice - state.priceToBeat;
@@ -924,7 +1035,6 @@
 			document.getElementById('live-down-odds').innerText = `$${currentDownOdds.toFixed(2)}`;
 		}
 
-		// --- PORTFOLIO ---
 		function updatePortfolioUI() {
 			document.getElementById('top-balance').innerText = `$${state.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 			const btnUp = document.getElementById('btn-buy-up'); const btnDown = document.getElementById('btn-buy-down');
@@ -994,7 +1104,35 @@
 			saveState(); renderHistoryLogs();
 		}
 
-		// --- PYTH AUTO-PEG ---
+		let tradesCount = 0;
+		function appendLiveTrade(data) {
+			if (tradesCount === 0) tradesListEl.innerHTML = '';
+
+			const adjustedTradePrice = parseFloat(data.p) + globalOffset;
+			const qty = parseFloat(data.q).toFixed(3);
+			const isSell = data.m;
+			const typeStr = isSell ? 'SELL ▼' : 'BUY ▲';
+			const colorClass = isSell ? 'color-red' : 'color-green';
+
+			const date = new Date(data.T);
+			const timeStr = date.toLocaleTimeString('en-US', { hour12: false }) + '.' + date.getMilliseconds().toString().padStart(3, '0').substring(0, 2);
+
+			const div = document.createElement('div');
+			div.className = 'trade-item';
+			div.innerHTML = `
+                <span class="trade-time">${timeStr}</span>
+                <span class="trade-price ${colorClass}">$${adjustedTradePrice.toFixed(2)}</span>
+                <span class="trade-qty">${qty} ₿</span>
+            `;
+
+			tradesListEl.insertBefore(div, tradesListEl.firstChild);
+			tradesCount++;
+
+			if (tradesListEl.childNodes.length > 40) {
+				tradesListEl.removeChild(tradesListEl.lastChild);
+			}
+		}
+
 		async function syncWithPythOracle() {
 			if (currentRawPrice === 0) return;
 			try {
@@ -1004,6 +1142,14 @@
 					const priceData = data[0].price;
 					const pythPrice = Number(priceData.price) * Math.pow(10, priceData.expo);
 					globalOffset = pythPrice - currentRawPrice;
+					document.getElementById('offset-display').innerText = `${globalOffset >= 0 ? '+' : ''}${globalOffset.toFixed(2)} USD`;
+
+					if (state.priceToBeat > 0 && lastAdjustedPrice > 0) {
+						const oldAdjusted = lastAdjustedPrice; const newAdjusted = currentRawPrice + globalOffset;
+						state.priceToBeat += (newAdjusted - oldAdjusted);
+						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+						saveState();
+					}
 					updatePriceDisplay(currentRawPrice); drawCorrectedCandles();
 				}
 			} catch (error) { }
@@ -1040,7 +1186,6 @@
 			}
 		}
 
-		// --- HAL-9000 NEURAL METRICS ---
 		function updateLiveMetrics() {
 			if (klineData.length < 30) return null;
 			const closes = klineData.map(d => d.close + globalOffset);
@@ -1049,7 +1194,6 @@
 			const volumes = klineData.map(d => d.volume);
 			const currentClose = closes[closes.length - 1];
 
-			// VWAP
 			let cumTypicalVol = 0; let cumVol = 0;
 			for (let i = 0; i < closes.length; i++) {
 				const typicalPrice = (highs[i] + lows[i] + closes[i]) / 3;
@@ -1058,25 +1202,19 @@
 			const vwap = cumTypicalVol / cumVol;
 			document.getElementById('hal-vwap').innerHTML = currentClose > vwap ? `<span class="color-green">BULL</span>` : `<span class="color-red">BEAR</span>`;
 
-			// TREND-FOLLOWING RSI
 			let gains = 0, losses = 0;
 			for (let i = closes.length - 14; i < closes.length; i++) { const diff = closes[i] - closes[i - 1]; if (diff >= 0) gains += diff; else losses -= diff; }
 			const rsi = 100 - (100 / (1 + ((gains / 14) / (losses / 14 || 1))));
 			document.getElementById('hal-rsi').innerHTML = rsi > 55 ? `<span class="color-green">${rsi.toFixed(1)}</span>` : (rsi < 45 ? `<span class="color-red">${rsi.toFixed(1)}</span>` : `<span class="color-muted">${rsi.toFixed(1)}</span>`);
 
-			// EMA
 			const ema9 = closes.slice(-9).reduce((a, b) => a + b, 0) / 9;
 			const ema21 = closes.slice(-21).reduce((a, b) => a + b, 0) / 21;
 			document.getElementById('hal-ema').innerHTML = ema9 > ema21 ? `<span class="color-green">UP CROSS</span>` : `<span class="color-red">DWN CROSS</span>`;
 
-			// MOMENTUM
 			const momDiff = currentClose - closes[closes.length - 4];
 			document.getElementById('hal-mom').innerHTML = momDiff > 0 ? `<span class="color-green">UP</span>` : `<span class="color-red">DOWN</span>`;
 
-			// MACD
 			const macd = (closes.slice(-12).reduce((a, b) => a + b, 0) / 12) - (closes.slice(-26).reduce((a, b) => a + b, 0) / 26);
-
-			// BB
 			const sma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
 			return { rsi, ema9, ema21, vwap, currentClose, sma20, momDiff, macd };
@@ -1085,47 +1223,25 @@
 		function generateLockedPrediction() {
 			const metrics = updateLiveMetrics(); if (!metrics) return;
 
-			// YENİ: SİNİRSEL (NEURAL) SİNYAL OLUŞTURUCU
 			let sig = { vwap: 0, ema: 0, macd: 0, rsi: 0, mom: 0, bb: 0 };
-
-			// VWAP (Fiyat üstündeyse UP, altındaysa DOWN)
 			sig.vwap = metrics.currentClose > metrics.vwap ? 1 : -1;
-			// EMA (9 > 21 ise UP, tam tersi DOWN)
 			sig.ema = metrics.ema9 > metrics.ema21 ? 1 : -1;
-			// MACD
 			sig.macd = metrics.macd > 0 ? 1 : -1;
-			// RSI (Trend Following mantığı - Şiştiyse düşer DEĞİL, 50'nin üstündeyse gücü arkasına almıştır)
-			if (metrics.rsi >= 50 && metrics.rsi < 85) sig.rsi = 1;
-			else if (metrics.rsi < 50 && metrics.rsi > 15) sig.rsi = -1;
-			else if (metrics.rsi >= 85) sig.rsi = -1; // Çok aşırı şiştiyse geri döner
-			else if (metrics.rsi <= 15) sig.rsi = 1;
-			// MOMENTUM
+			if (metrics.rsi >= 50 && metrics.rsi < 85) sig.rsi = 1; else if (metrics.rsi < 50 && metrics.rsi > 15) sig.rsi = -1; else if (metrics.rsi >= 85) sig.rsi = -1; else if (metrics.rsi <= 15) sig.rsi = 1;
 			sig.mom = metrics.momDiff > 0 ? 1 : -1;
-			// BOLLINGER (Trend içi kalma)
 			sig.bb = metrics.currentClose > metrics.sma20 ? 1 : -1;
-
-			// Öğrenme mekanizması için sinyalleri kaydet
 			state.lastSignals = sig;
 
-			// Ağırlıklandırılmış Skor Hesaplama
-			let score = 0;
-			let w = state.weights;
-			score += sig.vwap * w.vwap;
-			score += sig.ema * w.ema;
-			score += sig.macd * w.macd;
-			score += sig.rsi * w.rsi;
-			score += sig.mom * w.mom;
-			score += sig.bb * w.bb;
+			let score = 0; let w = state.weights;
+			score += sig.vwap * w.vwap; score += sig.ema * w.ema; score += sig.macd * w.macd;
+			score += sig.rsi * w.rsi; score += sig.mom * w.mom; score += sig.bb * w.bb;
 
 			let maxPossibleScore = w.vwap + w.ema + w.macd + w.rsi + w.mom + w.bb;
-
 			let confidence = 50 + (Math.abs(score) / maxPossibleScore) * 45;
 			if (confidence > 95) confidence = 95;
 
 			const predEl = document.getElementById('hal-prediction');
 			state.lockedConfidence = confidence;
-
-			// Eğer toplam sinyal gücü %15'in üstündeyse tetiğe bas, yoksa bekle (0.15 threshold)
 			const threshold = maxPossibleScore * 0.15;
 
 			if (score >= threshold) {
@@ -1145,31 +1261,14 @@
 		}
 
 		function executeSniperTrade() {
-			if (!state.isAutoTradeActive) {
-				updateBotStatus("SLEEPING (OFF)", "");
-				return;
-			}
-
-			if (state.activeBet) {
-				updateBotStatus("<span class='color-green'>IN POSITION</span>", "status-fired");
-				return;
-			}
-
-			if (state.lockedPredictionDirection === 0) {
-				updateBotStatus("<span class='color-orange'>RISKY MARKET (SKIPPED)</span>", "");
-				return;
-			}
+			if (!state.isAutoTradeActive) { updateBotStatus("SLEEPING (OFF)", ""); return; }
+			if (state.activeBet) { updateBotStatus("<span class='color-green'>IN POSITION</span>", "status-fired"); return; }
+			if (state.lockedPredictionDirection === 0) { updateBotStatus("<span class='color-orange'>RISKY MARKET (SKIPPED)</span>", ""); return; }
 
 			if (remainingSecondsGlobal <= 250 && remainingSecondsGlobal > 240) {
-				updateBotStatus("<span class='color-green'>FIRED (TIMEOUT)</span>", "status-fired");
-				executeTradeLogic();
-				return;
+				updateBotStatus("<span class='color-green'>FIRED (TIMEOUT)</span>", "status-fired"); executeTradeLogic(); return;
 			}
-
-			if (remainingSecondsGlobal <= 240) {
-				updateBotStatus("<span class='color-muted'>STANDBY</span>", "");
-				return;
-			}
+			if (remainingSecondsGlobal <= 240) { updateBotStatus("<span class='color-muted'>STANDBY</span>", ""); return; }
 
 			const gap = lastAdjustedPrice - state.priceToBeat;
 			const dir = state.lockedPredictionDirection;
@@ -1179,8 +1278,7 @@
 			if (dir === -1 && gap >= -2) isPerfectEntry = true;
 
 			if (isPerfectEntry) {
-				updateBotStatus("<span class='color-green'>FIRED (PERFECT ENTRY)</span>", "status-fired");
-				executeTradeLogic();
+				updateBotStatus("<span class='color-green'>FIRED (PERFECT ENTRY)</span>", "status-fired"); executeTradeLogic();
 			} else {
 				updateBotStatus("<span class='color-orange'>SNIPING... (WAITING)</span>", "status-sniping");
 			}
@@ -1240,10 +1338,8 @@
 						const prevHr = (minutes - 5 < 0) ? (hours === 0 ? 23 : hours - 1) : hours;
 						const prevIntervalStr = `${formatTime(prevHr, prevStartMin)} - ${formatTime(hours, minutes)}`;
 
-						let logResult = 'neutral';
-						let betMessage = '';
+						let logResult = 'neutral'; let betMessage = '';
 
-						// YENİ: MAKİNE ÖĞRENMESİ AĞIRLIKLARI GÜNCELLE!
 						trainNeuralNetwork(actualResult);
 
 						if (state.activeBet) {
@@ -1266,64 +1362,68 @@
 							document.getElementById('hal-score').innerText = `${state.halStats.won}W - ${state.halStats.lost}L`;
 						}
 
-						addHistoryLog({
-							time: prevIntervalStr, marketType: resultType, marketClass: resultClass,
-							marketGap: `${sign}$${Math.abs(resultGap).toFixed(2)}`, result: logResult, betMsg: betMessage
-						});
+						addHistoryLog({ time: prevIntervalStr, marketType: resultType, marketClass: resultClass, marketGap: `${sign}$${Math.abs(resultGap).toFixed(2)}`, result: logResult, betMsg: betMessage });
 
 						state.balanceHistory.push({ t: formatTime(hours, minutes), b: state.balance });
 						if (state.balanceHistory.length > 50) state.balanceHistory.shift();
 
-						updatePortfolioUI();
-						drawBalanceChart();
+						updatePortfolioUI(); drawBalanceChart();
 
 						state.priceToBeat = lastAdjustedPrice;
 						document.getElementById('ptb-val').innerText = `$${state.priceToBeat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
 						updateBotStatus("ANALYZING MARKET...", "");
-
-						generateLockedPrediction();
-						saveState();
+						generateLockedPrediction(); saveState();
 					}
 					lastSnapshotMinute = minutes;
 				}
-			}
-			else {
+			} else {
 				updateLiveMetrics();
 				if (seconds > 0) executeSniperTrade();
 			}
 		}
 		setInterval(updateClockTimer, 1000);
 
-		// --- WEBSOCKETS & CHART ---
+		// --- WEBSOCKETS ---
 		const indexWs = new WebSocket('wss://dstream.binance.com/stream?streams=btcusd_perp@markPrice@1s');
 		indexWs.onmessage = (event) => { if (JSON.parse(event.data).stream === 'btcusd_perp@markPrice@1s') updatePriceDisplay(parseFloat(JSON.parse(event.data).data.p)); };
 
-		const binanceWs = new WebSocket(`wss://stream.binance.com:9443/stream?streams=btcusdt@kline_${interval}`);
+		const binanceWs = new WebSocket(`wss://stream.binance.com:9443/stream?streams=btcusdt@kline_${interval}/btcusdt@trade`);
 		binanceWs.onopen = () => { document.getElementById('index-status-text').innerText = 'CONNECTED'; };
 		binanceWs.onmessage = (event) => {
-			const data = JSON.parse(event.data).data;
-			if (klineData.length === 0) return;
-			const candle = { time: data.k.t, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) };
-			if (klineData[klineData.length - 1].time === candle.time) { klineData[klineData.length - 1] = candle; }
-			else { klineData.push(candle); if (klineData.length > limit) klineData.shift(); }
-			drawCorrectedCandles();
+			const msg = JSON.parse(event.data);
+			if (msg.stream === 'btcusdt@trade') {
+				appendLiveTrade(msg.data);
+			}
+			else if (msg.stream === `btcusdt@kline_${interval}`) {
+				const data = msg.data;
+				if (klineData.length === 0) return;
+				const candle = { time: data.k.t, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) };
+				if (klineData[klineData.length - 1].time === candle.time) { klineData[klineData.length - 1] = candle; }
+				else { klineData.push(candle); if (klineData.length > currentChartLimit) klineData.shift(); }
+				drawCorrectedCandles();
+			}
 		};
 
 		async function fetchHistoricalKlines() {
 			try {
-				loadState();
-				const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`);
+				if (klineData.length === 0) loadState();
+				const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${currentChartLimit}`);
 				const data = await res.json();
 				klineData = data.map(k => ({ time: k[0], open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) }));
 
-				syncWithPythOracle();
-				updateLiveMetrics();
-				if (state.lockedPredictionDirection === 0) generateLockedPrediction();
-				updateClockTimer();
+				drawCorrectedCandles();
+
+				// Sadece ilk yüklemede çağır
+				if (currentChartLimit === 288 && globalOffset === 0) {
+					syncWithPythOracle();
+					updateLiveMetrics();
+					if (state.lockedPredictionDirection === 0) generateLockedPrediction();
+					updateClockTimer();
+				}
 			} catch (error) { }
 		}
 
+		// --- ENHANCED CANDLESTICK CHART WITH INDICATORS ---
 		function drawCorrectedCandles() {
 			if (klineData.length === 0) return;
 			const container = document.getElementById('mum-grafik-container');
@@ -1333,18 +1433,35 @@
 
 			ctxCandle.clearRect(0, 0, w, h);
 			const adjustedKlines = klineData.map(d => ({ open: d.open + globalOffset, high: d.high + globalOffset, low: d.low + globalOffset, close: d.close + globalOffset, time: d.time }));
+
+			// Y Ekseni sınırlarını belirle
 			const highPrices = adjustedKlines.map(d => d.high); const lowPrices = adjustedKlines.map(d => d.low);
 			let minPrice = Math.min(...lowPrices); let maxPrice = Math.max(...highPrices);
 			let priceRange = maxPrice - minPrice; if (priceRange === 0) priceRange = 100;
 			minPrice -= priceRange * 0.05; maxPrice += priceRange * 0.05; priceRange = maxPrice - minPrice;
 
+			// Arka plan Grid Çizgileri
 			ctxCandle.strokeStyle = '#222'; ctxCandle.lineWidth = 1;
 			for (let i = 0; i <= 5; i++) { const y = margin + drawingH - (drawingH / 5) * i; ctxCandle.beginPath(); ctxCandle.moveTo(0, y); ctxCandle.lineTo(drawingW, y); ctxCandle.stroke(); }
 			ctxCandle.strokeStyle = '#333'; ctxCandle.beginPath(); ctxCandle.moveTo(drawingW, 0); ctxCandle.lineTo(drawingW, h); ctxCandle.stroke();
 
-			const numCandles = adjustedKlines.length; const sectionWidth = drawingW / numCandles;
-			const candleWidth = Math.max(2, Math.min(10, sectionWidth * 0.6));
+			const numCandles = adjustedKlines.length;
 
+			// Gelecek tahmin lazeri için ekstra boşluk bırakalım (sağdan 10 mumluk yer)
+			const projectedCandles = 10;
+			const sectionWidth = drawingW / (numCandles + projectedCandles);
+			const candleWidth = Math.max(1, sectionWidth * 0.6);
+
+			// SMA-20 Hesapla
+			let sma20 = [];
+			for (let i = 0; i < adjustedKlines.length; i++) {
+				if (i < 19) { sma20.push(null); continue; }
+				let sum = 0;
+				for (let j = 0; j < 20; j++) sum += adjustedKlines[i - j].close;
+				sma20.push(sum / 20);
+			}
+
+			// Mumları ve Sinyalleri Çiz
 			adjustedKlines.forEach((d, i) => {
 				const centerX = (i * sectionWidth) + (sectionWidth / 2);
 				const yOpen = margin + drawingH - ((d.open - minPrice) / priceRange) * drawingH;
@@ -1353,18 +1470,75 @@
 				const yClose = margin + drawingH - ((d.close - minPrice) / priceRange) * drawingH;
 				const isGreen = d.close >= d.open; const candleColor = isGreen ? '#99cc00' : '#ff4444';
 
+				// Fitil
 				ctxCandle.strokeStyle = candleColor; ctxCandle.fillStyle = candleColor; ctxCandle.lineWidth = 1;
 				ctxCandle.beginPath(); ctxCandle.moveTo(centerX, yHigh); ctxCandle.lineTo(centerX, yLow); ctxCandle.stroke();
+
+				// Gövde
 				const bodyTop = Math.min(yOpen, yClose); const bodyHeight = Math.max(1.5, Math.abs(yOpen - yClose));
 				ctxCandle.fillRect(centerX - (candleWidth / 2), bodyTop, candleWidth, bodyHeight);
 
-				if (i % 6 === 0 || i === numCandles - 1) {
+				// ON-CHART PATTERN DETECTOR (Engulfing Markers)
+				if (i > 0) {
+					let prev = adjustedKlines[i - 1];
+					// Bearish Engulfing
+					if (prev.close > prev.open && d.close < d.open && d.open >= prev.close && d.close <= prev.open && (d.open - d.close) > (prev.close - prev.open)) {
+						ctxCandle.fillStyle = '#ff4444'; ctxCandle.font = '8px Arial'; ctxCandle.textAlign = 'center';
+						ctxCandle.fillText('▼', centerX, yHigh - 5);
+					}
+					// Bullish Engulfing
+					if (prev.close < prev.open && d.close > d.open && d.open <= prev.close && d.close >= prev.open && (d.close - d.open) > (prev.open - prev.close)) {
+						ctxCandle.fillStyle = '#99cc00'; ctxCandle.font = '8px Arial'; ctxCandle.textAlign = 'center';
+						ctxCandle.fillText('▲', centerX, yLow + 10);
+					}
+				}
+
+				// X Ekseni Etiketleri (Dinamik)
+				let labelInterval = Math.max(6, Math.floor(numCandles / 8));
+				if (i % labelInterval === 0 || i === numCandles - 1) {
 					const date = new Date(d.time); const timeLabel = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
-					ctxCandle.font = '10px Roboto'; ctxCandle.fillStyle = '#888';
+					ctxCandle.font = '10px Roboto'; ctxCandle.fillStyle = i === numCandles - 1 ? '#99cc00' : '#888';
 					ctxCandle.textAlign = 'center'; ctxCandle.fillText(timeLabel, centerX, h - 5);
 				}
 			});
 
+			// SMA-20 Çizgisini Çiz
+			ctxCandle.beginPath();
+			ctxCandle.strokeStyle = 'rgba(255, 187, 51, 0.8)'; // Holo Orange
+			ctxCandle.lineWidth = 1.5;
+			adjustedKlines.forEach((d, i) => {
+				if (sma20[i] !== null) {
+					const x = (i * sectionWidth) + (sectionWidth / 2);
+					const y = margin + drawingH - ((sma20[i] - minPrice) / priceRange) * drawingH;
+					if (i === 19) ctxCandle.moveTo(x, y); else ctxCandle.lineTo(x, y);
+				}
+			});
+			ctxCandle.stroke();
+
+			// GELECEK PROJEKSİYONU Lazer Çizgisi (Trend Line)
+			if (numCandles > 10) {
+				const lastClose = adjustedKlines[numCandles - 1].close;
+				const pastClose = adjustedKlines[numCandles - 10].close;
+				const slope = (lastClose - pastClose) / 10;
+
+				const startX = ((numCandles - 1) * sectionWidth) + (sectionWidth / 2);
+				const startY = margin + drawingH - ((lastClose - minPrice) / priceRange) * drawingH;
+
+				const projectedClose = lastClose + (slope * projectedCandles);
+				const endX = ((numCandles - 1 + projectedCandles) * sectionWidth) + (sectionWidth / 2);
+				const endY = margin + drawingH - ((projectedClose - minPrice) / priceRange) * drawingH;
+
+				ctxCandle.beginPath();
+				ctxCandle.setLineDash([4, 4]); // Kesik çizgi
+				ctxCandle.strokeStyle = slope > 0 ? 'rgba(153, 204, 0, 0.6)' : 'rgba(255, 68, 68, 0.6)';
+				ctxCandle.lineWidth = 1.5;
+				ctxCandle.moveTo(startX, startY);
+				ctxCandle.lineTo(endX, endY);
+				ctxCandle.stroke();
+				ctxCandle.setLineDash([]); // Normale dön
+			}
+
+			// Y Ekseni Etiketleri
 			ctxCandle.font = '11px Roboto'; ctxCandle.fillStyle = '#888'; ctxCandle.textAlign = 'left';
 			for (let i = 0; i <= 5; i++) {
 				const price = minPrice + (priceRange / 5) * i; const y = margin + drawingH - (priceRange / 5) * i;
@@ -1372,6 +1546,7 @@
 			}
 		}
 
+		// ÇİZGİ GRAFİK (EQUITY CURVE)
 		function drawBalanceChart() {
 			if (!state.balanceHistory || state.balanceHistory.length === 0) return;
 			const container = document.getElementById('balance-grafik-container');
@@ -1396,29 +1571,19 @@
 				ctxBalance.beginPath(); ctxBalance.moveTo(0, y); ctxBalance.lineTo(drawingW, y); ctxBalance.stroke();
 			}
 
-			ctxBalance.beginPath();
-			ctxBalance.strokeStyle = '#33b5e5';
-			ctxBalance.lineWidth = 2;
-
+			ctxBalance.beginPath(); ctxBalance.strokeStyle = '#33b5e5'; ctxBalance.lineWidth = 2;
 			const stepX = state.balanceHistory.length > 1 ? drawingW / (state.balanceHistory.length - 1) : drawingW;
-
 			state.balanceHistory.forEach((pt, i) => {
 				const x = i * stepX;
 				const y = margin + drawingH - ((pt.b - minB) / range) * drawingH;
-				if (i === 0) ctxBalance.moveTo(x, y);
-				else ctxBalance.lineTo(x, y);
+				if (i === 0) ctxBalance.moveTo(x, y); else ctxBalance.lineTo(x, y);
 			});
 			ctxBalance.stroke();
 
-			ctxBalance.lineTo(drawingW, margin + drawingH);
-			ctxBalance.lineTo(0, margin + drawingH);
-			ctxBalance.closePath();
-
+			ctxBalance.lineTo(drawingW, margin + drawingH); ctxBalance.lineTo(0, margin + drawingH); ctxBalance.closePath();
 			const grad = ctxBalance.createLinearGradient(0, 0, 0, h);
-			grad.addColorStop(0, 'rgba(51, 181, 229, 0.4)');
-			grad.addColorStop(1, 'rgba(51, 181, 229, 0.0)');
-			ctxBalance.fillStyle = grad;
-			ctxBalance.fill();
+			grad.addColorStop(0, 'rgba(51, 181, 229, 0.4)'); grad.addColorStop(1, 'rgba(51, 181, 229, 0.0)');
+			ctxBalance.fillStyle = grad; ctxBalance.fill();
 		}
 
 		function onPageLoad() { fetchHistoricalKlines(); }
