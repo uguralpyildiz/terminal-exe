@@ -721,7 +721,7 @@
 				<div class="header-boxes-container">
 					<div class="header-box balance">
 						<div class="box-title">PORTFOLIO BALANCE</div>
-						<div class="box-val color-green" id="top-balance">$1,000.00</div>
+						<div class="box-val color-green" id="top-balance">$0.00</div>
 					</div>
 
 					<div class="header-box target">
@@ -750,7 +750,7 @@
 			<div class="panel">
 				<div class="panel-title">Trade Execution</div>
 				<div style="margin-bottom: 10px;">
-					<button class="btn-simple" onclick="addFunds()" style="width: 100%;">+ DEPOSIT $1000</button>
+					<button class="btn-simple" onclick="addFunds()" style="width: 100%; visibility:hidden">+ DEPOSIT $1000</button>
 				</div>
 
 				<div class="auto-trade-switch">
@@ -903,7 +903,7 @@
 
 		// --- LOCAL STORAGE & ML STATE ---
 		let state = {
-			balance: 1000.00,
+			balance: 0.00,
 			balanceHistory: [],
 			activeBet: null,
 			priceToBeat: 0,
