@@ -1025,6 +1025,11 @@
 		color: var(--green);
 	}
 
+	.ltp {
+		color: #10b981;
+		text-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
+	}
+
 	.ll {
 		color: var(--red);
 	}
@@ -1301,25 +1306,29 @@
 	/* Odometer / Rolling Number Animation */
 	.odo-wrap {
 		display: inline-flex;
-		align-items: flex-start; /* FIX: Changed from center to flex-start to prevent vertically stacked spans from being cut off in the middle */
+		align-items: flex-start;
 		overflow: hidden;
 		vertical-align: top;
+		position: relative;
 	}
 	.odo-digit {
 		display: inline-flex;
 		flex-direction: column;
-		transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+		transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); /* Daha pürüzsüz ease-out transition */
 		will-change: transform;
 	}
 	.odo-digit span {
 		display: inline-block;
 		height: 1em;
 		line-height: 1;
+		width: 100%; /* Sayı genişliklerinin zıplamasını önlemek için */
+		text-align: center;
 	}
 	.odo-char {
 		display: inline-block;
 		height: 1em;
 		line-height: 1;
+		text-align: center;
 	}
 
 	/* Toast / Flash */
@@ -1737,6 +1746,9 @@ function renderOdometer(el, newValStr, oldValStr, isUp) {
       const s2 = document.createElement('span');
       s2.textContent = nc;
 
+      // Fixed width to avoid layout jumps during transition
+      digitWrap.style.width = '0.6em';
+
       // isUp ? (old moves up out of view, new comes from below) : (old moves down out of view, new comes from above)
       if (isUp) {
         digitTrack.appendChild(s1);
@@ -1839,6 +1851,7 @@ function resetState() {
 // ═══════════════════════════════════════════════════════
 let price = 0, prevPrice = 0, pythOff = 0;
 let candles = [], htf1hCandles = [], htf4hCandles = [];
+let oiHistory = [];
 let kBuf = null;
 let curTF = 48;
 let tradeVol = [];
@@ -1932,6 +1945,18 @@ async function fetchHTF() {
     htf1hCandles = d1h.map(k => ({ t:+k[0], o:+k[1], h:+k[2], l:+k[3], c:+k[4], v:+k[5] }));
     htf4hCandles = d4h.map(k => ({ t:+k[0], o:+k[1], h:+k[2], l:+k[3], c:+k[4], v:+k[5] }));
   } catch(e) { console.warn('HTF fetch err', e); }
+}
+
+// OI (Open Interest) API
+async function fetchOI() {
+  try {
+    const r = await fetch('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT');
+    const d = await r.json();
+    if (d && d.openInterest) {
+      oiHistory.push({ t: Date.now(), oi: parseFloat(d.openInterest) });
+      if (oiHistory.length > 30) oiHistory.shift(); // Son 5 dakikayı tutsak yeterli (10 sn aralıklarla)
+    }
+  } catch(e) { console.warn('OI fetch err', e); }
 }
 
 function setTF(n) {
@@ -2262,7 +2287,7 @@ function detectRegime(data) {
 // FAKEOUT FILTER
 // ═══════════════════════════════════════════════════════
 function fakeoutCheck(data) {
-  if (data.length < 5) return { clean: true, score: 1.0 };
+  if (data.length < 5) return { clean: true, score: 1.0, oiSqueeze: false };
   const last = data[data.length-1];
   const prev = data[data.length-2];
   const atr = atrCalc(data.map(c=>c.h), data.map(c=>c.l), data.map(c=>c.c), 14);
@@ -2290,15 +2315,32 @@ function fakeoutCheck(data) {
   // Daha sıkı CVD uyumsuzluk kontrolü
   const cvdDisagrees = (priceUp && cvd.bias < -0.12) || (!priceUp && cvd.bias > 0.12);
 
+  // Open Interest Anti-Manipulation Check (Squeeze Trap)
+  let oiSqueeze = false;
+  if (oiHistory.length > 5) {
+    const recentOI = oiHistory[oiHistory.length - 1].oi;
+    const oldOI = oiHistory[0].oi; // Yaklaşık son 1-5 dk öncesi
+    const oiDrop = (oldOI - recentOI) / oldOI > 0.001; // Belirgin bir OI düşüşü
+    const priceRise = last.c > data[data.length-4].c; // Fiyat son 3-4 mumda artmış mı
+    const priceDrop = last.c < data[data.length-4].c; // Fiyat son 3-4 mumda düşmüş mü
+
+    // Fiyat artıyor ama Para çıkıyor (OI düşüyor) -> Short Squeeze Fakeout
+    // Fiyat düşüyor ama Para çıkıyor (OI düşüyor) -> Long Squeeze Fakeout
+    if ((priceRise && oiDrop) || (priceDrop && oiDrop)) {
+      oiSqueeze = true;
+    }
+  }
+
   let issues = 0;
   if (longUpperWick || longLowerWick) issues++;
   if (sweepHigh || sweepLow) issues++; // Yeni likidite avı cezası
   if (volSpike && body < range * 0.3) issues += 1.5; // Hacimli fakeout daha tehlikelidir
   if (cvdDisagrees) issues++;
+  if (oiSqueeze) issues += 2.0; // OI Squeeze çok güçlü bir tuzak sinyalidir, skoru direkt indir.
 
   // Çok daha agresif bir penaltı sistemi
   const score = Math.max(0.1, 1.0 - issues * 0.25);
-  return { clean: issues === 0, score, longUpperWick, longLowerWick, volSpike, cvdDisagrees, sweepHigh, sweepLow };
+  return { clean: issues === 0, score, longUpperWick, longLowerWick, volSpike, cvdDisagrees, sweepHigh, sweepLow, oiSqueeze };
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2657,8 +2699,9 @@ function runAI() {
   const cvdVeto = (dir==='UP'&&cvd.bias<-0.12) || (dir==='DOWN'&&cvd.bias>0.12);
   if (cvdVeto) dir = 'NEUTRAL';
 
-  // Low volatility filter
-  if (atr/price*100 < 0.05) dir = 'NEUTRAL'; // too quiet
+  // Low volatility filter (Chop Market / Sığ piyasa filtresi)
+  const lowVol = (atr/price*100) < 0.04;
+  if (lowVol) dir = 'NEUTRAL'; // too quiet
 
   // Exhaustion logic (prevent stubbornly guessing the same direction)
   let exhaustionPenalty = 0;
@@ -2694,12 +2737,17 @@ function runAI() {
 
   // ── Rationale ──
   let rat = '';
-  if (dir === 'NEUTRAL') {
+  if (lowVol) {
+    rat = '⏸ BEKLE: Yetersiz Volatilite (ATR düşük), Chop Market Filtresi Devrede';
+  } else if (dir === 'NEUTRAL') {
     const why = [];
     if (confirmCount < STACK_MIN) why.push(`stack ${confirmCount}/5 (min 3 gerekli)`);
     if (!htfAlign && htfDir !== 0) why.push('HTF yönü çelişiyor');
     if (cvdVeto) why.push('CVD akışı karşı yönde');
-    if (!fakeoutClear) why.push('fakeout riski var');
+    if (!fakeoutClear) {
+      if (fakeout.oiSqueeze) why.push('OI Squeeze Tuzağı');
+      else why.push('fakeout riski var');
+    }
     if (!sessGood) why.push('session uygun değil ('+session.name+')');
     if (scoreRatio <= THRESHOLD) why.push('sinyal gücü zayıf');
     rat = '⏸ BEKLE: ' + (why.length ? why.join(' · ') : 'Koşullar uygun değil');
@@ -3390,10 +3438,11 @@ function addTick(isBuy, p, q) {
 }
 
 // ═══════════════════════════════════════════════════════
-// CYCLE ENGINE
+// CYCLE ENGINE & TAKE PROFIT
 // ═══════════════════════════════════════════════════════
 const cycS = { ptb:0, sl:300, phase:'INIT' };
 let activeBet = null;
+const TAKE_PROFIT_THRESHOLD = 1.30;
 
 function getCycSec() {
   const now = new Date();
@@ -3425,7 +3474,12 @@ function cycleLoop() {
 
   const m=Math.floor(sl/60), s=(sl%60).toString().padStart(2,'0');
   const te=document.getElementById('ctimer');
-  te.textContent=`${m}:${s}`;
+  const newTimerStr = `${m}:${s}`;
+  if (!te.dataset.val || te.dataset.val !== newTimerStr) {
+    // Timer her zaman aşağı doğru (countdown) sayar, bu yüzden isUp her zaman false
+    renderOdometer(te, newTimerStr, te.dataset.val, false);
+    te.dataset.val = newTimerStr;
+  }
   te.style.color=sl<=30?'var(--red)':sl<=60?'var(--orange)':'var(--orange)';
 
   if (cycS.ptb > 0 && price > 0) {
@@ -3443,6 +3497,18 @@ function cycleLoop() {
     ge.style.color = gap>=0?'var(--green)':'var(--red)';
 
     updateAMM(gap, sl);
+
+    // Early Exit (Take Profit) Kontrolü
+    if (activeBet && window._amm) {
+      const currentOdds = activeBet.dir === 'UP' ? window._amm.up : window._amm.dn;
+      const currentMultiplier = currentOdds / activeBet.odds;
+      const livePnl = activeBet.stake * currentMultiplier - activeBet.stake;
+      document.getElementById('abp').textContent = fpC(activeBet.stake + livePnl); // Canlı P&L
+
+      if (currentMultiplier >= TAKE_PROFIT_THRESHOLD) {
+        resolveCycle(true); // Early Exit!
+      }
+    }
   }
   document.getElementById('csub').textContent = cycS.phase==='ACTIVE' ? `ACTIVE — ${sl}s remaining` : 'BEKLENIYOR...';
 
@@ -3457,10 +3523,11 @@ function cycleLoop() {
   }
 }
 
-function resolveCycle() {
+function resolveCycle(earlyExit = false) {
   if (price === 0 || cycS.ptb === 0) return; // fiyat yok, resolve etme
-  const outcome = price >= cycS.ptb ? 'UP' : 'DOWN';
-  adaptWeights(outcome);
+
+  const outcome = earlyExit && activeBet ? activeBet.dir : (price >= cycS.ptb ? 'UP' : 'DOWN');
+  if (!earlyExit) adaptWeights(outcome);
 
   // Arkaplanda bet kaybolmuş olabilir — localStorage'dan recover et
   if (!activeBet) {
@@ -3480,8 +3547,14 @@ function resolveCycle() {
   }
 
   const won = activeBet.dir === outcome;
-  const winAmt = won ? activeBet.stake / activeBet.odds : 0;
-  const pnl = won ? winAmt - activeBet.stake : -activeBet.stake;
+
+  let pnl = 0;
+  if (earlyExit) {
+    pnl = activeBet.stake * (TAKE_PROFIT_THRESHOLD - 1.0);
+  } else {
+    const winAmt = won ? activeBet.stake / activeBet.odds : 0;
+    pnl = won ? winAmt - activeBet.stake : -activeBet.stake;
+  }
   S.balance += pnl;
   if (S.balance < 0) S.balance = 0;
   if (S.balance > S.peakBalance) S.peakBalance = S.balance;
@@ -3497,10 +3570,11 @@ function resolveCycle() {
   }
   S.totalBets++;
 
-  S.tradeLogs.unshift({ type:won?'win':'loss', dir:activeBet.dir, stake:activeBet.stake, pnl, balance:S.balance, time:new Date().toLocaleTimeString() });
+  const logType = earlyExit ? 'early tp' : (won ? 'win' : 'loss');
+  S.tradeLogs.unshift({ type:logType, dir:activeBet.dir, stake:activeBet.stake, pnl, balance:S.balance, time:new Date().toLocaleTimeString() });
   S.tradeLogs = S.tradeLogs.slice(0, 60);
   save(); flashResult(won);
-  showToast(won ? `✅ WIN +${fpC(pnl)}` : `❌ LOSS ${fpC(pnl)}`, true); // important=true
+  showToast(earlyExit ? `🚀 EARLY TP +${fpC(pnl)}` : (won ? `✅ WIN +${fpC(pnl)}` : `❌ LOSS ${fpC(pnl)}`), true);
 
   activeBet = null;
   try { localStorage.removeItem('hal9000_active_bet'); } catch(e) {}
@@ -3550,7 +3624,8 @@ function updateAMM(gap, sl) {
   // 5. Nihai İhtimal Hesaplaması (Implied Probability)
   // Döngü başlarken (sl=300) ağırlık tamamen sentiment'tedir.
   // Zaman azaldıkça (sl=0) ağırlık fiyatın hedefe ulaşıp ulaşmadığına (distance) geçer.
-  const timeRatio = sl / 300;
+  // Polymarket asimetrik açılışı: başlarda skew çok daha dominant.
+  const timeRatio = Math.pow(sl / 300, 0.7); // Eğriyi sentiment lehine biraz daha uzun tutuyoruz
   let finalUpProb = (sentimentProb * timeRatio) + (pureDistanceProb * (1 - timeRatio));
 
   // Minimum ve maksimum olasılık sınırları (Polymarket tarzı 1¢ - 99¢)
@@ -3784,7 +3859,7 @@ function renderLog() {
   if (!S.tradeLogs.length) { c.innerHTML='<div style="color:var(--dim);font-size:12px;padding:5px 0">Henüz işlem yok.</div>'; return; }
   c.innerHTML = S.tradeLogs.map(l => {
     if (l.type==='skip') return `<div class="le"><span class="lr lsk">SKIP</span><span style="color:var(--dim)">${l.reason}</span><span class="lt2">${l.time}</span></div>`;
-    const wc=l.type==='win'?'lw':'ll', dc=l.dir==='UP'?'up':'dn';
+    const wc=l.type==='win'?'lw':(l.type==='early tp'?'ltp':'ll'), dc=l.dir==='UP'?'up':'dn';
     return `<div class="le"><span class="lr ${wc}">${l.type.toUpperCase()}</span><span class="ld ${dc}">${l.dir}</span><span class="lpnl" style="color:${l.pnl>=0?'var(--green)':'var(--red)'}">${l.pnl>=0?'+':''}${fpC(Math.abs(l.pnl))}</span><span style="color:var(--dim);font-size:8px">${fpC(l.balance)}</span><span class="lt2">${l.time}</span></div>`;
   }).join('');
 }
@@ -3827,7 +3902,9 @@ function init() {
   fetchHTF();
   connect();
   fetchPyth();
+  fetchOI();
   setInterval(fetchPyth, 5000);
+  setInterval(fetchOI, 10000); // OI refresh every 10 seconds
   setInterval(fetchHTF, 60000); // HTF refresh every minute
 
   // ── Critical loop: cycle + timing — her 500ms, background'da da çalışır ──
