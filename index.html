@@ -1298,6 +1298,30 @@
 		color: var(--red);
 	}
 
+	/* Odometer / Rolling Number Animation */
+	.odo-wrap {
+		display: inline-flex;
+		align-items: flex-start; /* FIX: Changed from center to flex-start to prevent vertically stacked spans from being cut off in the middle */
+		overflow: hidden;
+		vertical-align: top;
+	}
+	.odo-digit {
+		display: inline-flex;
+		flex-direction: column;
+		transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+		will-change: transform;
+	}
+	.odo-digit span {
+		display: inline-block;
+		height: 1em;
+		line-height: 1;
+	}
+	.odo-char {
+		display: inline-block;
+		height: 1em;
+		line-height: 1;
+	}
+
 	/* Toast / Flash */
 	#toast {
 		position: fixed;
@@ -1669,6 +1693,92 @@
 
 <script>
 'use strict';
+
+// ═══════════════════════════════════════════════════════
+// ODOMETER / ROLLING NUMBER ENGINE
+// ═══════════════════════════════════════════════════════
+function renderOdometer(el, newValStr, oldValStr, isUp) {
+  if (!el) return;
+  // If lengths differ or it's not mostly numbers, fallback to basic text to prevent layout breaks
+  if (oldValStr === undefined || oldValStr === '—' || newValStr.length !== oldValStr.length) {
+    el.innerHTML = '';
+    for (let i = 0; i < newValStr.length; i++) {
+      const char = newValStr[i];
+      const span = document.createElement('span');
+      span.className = 'odo-char';
+      span.textContent = char;
+      el.appendChild(span);
+    }
+    return;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'odo-wrap';
+
+  for (let i = 0; i < newValStr.length; i++) {
+    const nc = newValStr[i];
+    const oc = oldValStr[i];
+
+    if (nc === oc) {
+      const span = document.createElement('span');
+      span.className = 'odo-char';
+      span.textContent = nc;
+      wrap.appendChild(span);
+    } else {
+      const digitWrap = document.createElement('div');
+      digitWrap.className = 'odo-wrap';
+      digitWrap.style.height = '1em';
+
+      const digitTrack = document.createElement('div');
+      digitTrack.className = 'odo-digit';
+
+      const s1 = document.createElement('span');
+      s1.textContent = oc;
+      const s2 = document.createElement('span');
+      s2.textContent = nc;
+
+      // isUp ? (old moves up out of view, new comes from below) : (old moves down out of view, new comes from above)
+      if (isUp) {
+        digitTrack.appendChild(s1);
+        digitTrack.appendChild(s2);
+        digitTrack.style.transform = 'translateY(0)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            digitTrack.style.transform = 'translateY(-1em)';
+          });
+        });
+      } else {
+        digitTrack.appendChild(s2);
+        digitTrack.appendChild(s1);
+        digitTrack.style.transform = 'translateY(-1em)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            digitTrack.style.transform = 'translateY(0)';
+          });
+        });
+      }
+
+      digitWrap.appendChild(digitTrack);
+      wrap.appendChild(digitWrap);
+    }
+  }
+
+  el.innerHTML = '';
+  el.appendChild(wrap);
+
+  // Cleanup after animation finishes (300ms) to leave clean text
+  setTimeout(() => {
+    if (el.lastChild === wrap) {
+      el.innerHTML = '';
+      for (let i = 0; i < newValStr.length; i++) {
+        const span = document.createElement('span');
+        span.className = 'odo-char';
+        span.textContent = newValStr[i];
+        el.appendChild(span);
+      }
+    }
+  }, 350);
+}
 
 // ═══════════════════════════════════════════════════════
 // FORMAT
@@ -3322,9 +3432,16 @@ function cycleLoop() {
     const gap = price - cycS.ptb;
     document.getElementById('ptbv').textContent = fpC(cycS.ptb);
     document.getElementById('ovptb').textContent = fpC(cycS.ptb);
+
     const ge = document.getElementById('gapv');
-    ge.textContent = (gap>=0?'+':'') + fp(gap);
+    const newGapStr = (gap>=0?'+':'') + fp(gap);
+    if (!ge.dataset.val || ge.dataset.val !== newGapStr) {
+      renderOdometer(ge, newGapStr, ge.dataset.val, gap >= parseFloat(ge.dataset.rawGap || 0));
+      ge.dataset.val = newGapStr;
+      ge.dataset.rawGap = gap;
+    }
     ge.style.color = gap>=0?'var(--green)':'var(--red)';
+
     updateAMM(gap, sl);
   }
   document.getElementById('csub').textContent = cycS.phase==='ACTIVE' ? `ACTIVE — ${sl}s remaining` : 'BEKLENIYOR...';
@@ -3440,9 +3557,23 @@ function updateAMM(gap, sl) {
   finalUpProb = Math.max(0.01, Math.min(0.99, finalUpProb));
   const finalDnProb = 1 - finalUpProb;
 
-  // UI Güncelleme
-  document.getElementById('aup').textContent = '$' + finalUpProb.toFixed(3);
-  document.getElementById('adn').textContent = '$' + finalDnProb.toFixed(3);
+  // UI Güncelleme (Animasyonlu Odometer)
+  const upEl = document.getElementById('aup');
+  const dnEl = document.getElementById('adn');
+
+  const newUpStr = '$' + finalUpProb.toFixed(3);
+  const newDnStr = '$' + finalDnProb.toFixed(3);
+
+  if (!upEl.dataset.val || upEl.dataset.val !== newUpStr) {
+    renderOdometer(upEl, newUpStr, upEl.dataset.val, finalUpProb >= parseFloat(upEl.dataset.rawProb || 0));
+    upEl.dataset.val = newUpStr;
+    upEl.dataset.rawProb = finalUpProb;
+  }
+  if (!dnEl.dataset.val || dnEl.dataset.val !== newDnStr) {
+    renderOdometer(dnEl, newDnStr, dnEl.dataset.val, finalDnProb >= parseFloat(dnEl.dataset.rawProb || 0));
+    dnEl.dataset.val = newDnStr;
+    dnEl.dataset.rawProb = finalDnProb;
+  }
 
   // Ödül çarpanları (Payour multiplier)
   document.getElementById('auppay').textContent = (1 / finalUpProb).toFixed(2) + 'x';
@@ -3611,10 +3742,21 @@ function sniperLogic(sl) {
 // ═══════════════════════════════════════════════════════
 function updatePriceUI() {
   if (!price) return;
-  document.getElementById('ovpr').textContent = fpC(price);
+  const pe = document.getElementById('ovpr');
+  const newPriceStr = fpC(price);
+  if (!pe.dataset.val || pe.dataset.val !== newPriceStr) {
+    renderOdometer(pe, newPriceStr, pe.dataset.val, price >= prevPrice);
+    pe.dataset.val = newPriceStr;
+  }
+
   const ch = prevPrice > 0 ? price - prevPrice : 0;
   const ce = document.getElementById('ovch');
-  ce.textContent = (ch>=0?'+':'') + fp(ch);
+  const newChStr = (ch>=0?'+':'') + fp(ch);
+  if (!ce.dataset.val || ce.dataset.val !== newChStr) {
+    renderOdometer(ce, newChStr, ce.dataset.val, ch >= parseFloat(ce.dataset.rawCh || 0));
+    ce.dataset.val = newChStr;
+    ce.dataset.rawCh = ch;
+  }
   ce.style.color = ch>=0?'var(--green)':'var(--red)';
 }
 
