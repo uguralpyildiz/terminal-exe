@@ -3394,18 +3394,61 @@ function resolveCycle() {
 }
 
 // ═══════════════════════════════════════════════════════
-// AMM
+// AMM (Polymarket Simulated Order Book Skew)
 // ═══════════════════════════════════════════════════════
 function updateAMM(gap, sl) {
-  const td = 1-(sl/300)*0.3;
-  const norm = gap/(price*0.001+0.01);
-  const upP = Math.max(0.05, Math.min(0.95, sigmoid(norm*td*0.5)));
-  const dnP = 1 - upP;
-  document.getElementById('aup').textContent = '$' + upP.toFixed(3);
-  document.getElementById('adn').textContent = '$' + dnP.toFixed(3);
-  document.getElementById('auppay').textContent = (1/upP).toFixed(2)+'x';
-  document.getElementById('adnpay').textContent = (1/dnP).toFixed(2)+'x';
-  window._amm = { up:upP, dn:dnP };
+  // 1. Time Decay (Zaman daraldıkça oranların fiyata duyarlılığı artar)
+  const td = 1 - (sl / 300) * 0.4;
+
+  // 2. Saf Mesafe Olasılığı (Eski mantık - fiyat ne kadar uzakta)
+  const norm = gap / (price * 0.0008 + 0.01);
+  const pureDistanceProb = sigmoid(norm * td * 0.6);
+
+  // 3. Market Sentiment (Talep Kayması / Skew)
+  // AI'ın mevcut analizini alarak piyasa inancını (implied probability) çıkarıyoruz
+  const ai = getCachedAI();
+  let skew = 0; // -1 to 1 (Negatif: DOWN talebi, Pozitif: UP talebi)
+
+  if (ai) {
+    // CVD (Alım/Satım Hacmi) Çok büyük bir etken
+    const cvdBias = ai.cvd ? ai.cvd.bias : 0;
+
+    // HTF Trend Yönü
+    const htfBias = ai.htfBias || 0;
+
+    // AI'ın genel güven skoru (50 nötr, 90 kesin)
+    const confNorm = ai.dir === 'UP' ? (ai.conf - 50) / 50 : ai.dir === 'DOWN' ? -(ai.conf - 50) / 50 : 0;
+
+    // Sentiment'i harmanla (Polymarket halkının tahmini eğilimi)
+    skew = (cvdBias * 1.5) + (htfBias * 0.4) + (confNorm * 0.8);
+
+    // Limit skew between -1.2 and 1.2
+    skew = Math.max(-1.2, Math.min(1.2, skew));
+  }
+
+  // 4. Skew'i olasılığa çevir (sigmoid)
+  // Eğer skew 1.0 ise, %73 ihtimalle insanlar UP'a basıyor demektir.
+  const sentimentProb = sigmoid(skew * 1.5);
+
+  // 5. Nihai İhtimal Hesaplaması (Implied Probability)
+  // Döngü başlarken (sl=300) ağırlık tamamen sentiment'tedir.
+  // Zaman azaldıkça (sl=0) ağırlık fiyatın hedefe ulaşıp ulaşmadığına (distance) geçer.
+  const timeRatio = sl / 300;
+  let finalUpProb = (sentimentProb * timeRatio) + (pureDistanceProb * (1 - timeRatio));
+
+  // Minimum ve maksimum olasılık sınırları (Polymarket tarzı 1¢ - 99¢)
+  finalUpProb = Math.max(0.01, Math.min(0.99, finalUpProb));
+  const finalDnProb = 1 - finalUpProb;
+
+  // UI Güncelleme
+  document.getElementById('aup').textContent = '$' + finalUpProb.toFixed(3);
+  document.getElementById('adn').textContent = '$' + finalDnProb.toFixed(3);
+
+  // Ödül çarpanları (Payour multiplier)
+  document.getElementById('auppay').textContent = (1 / finalUpProb).toFixed(2) + 'x';
+  document.getElementById('adnpay').textContent = (1 / finalDnProb).toFixed(2) + 'x';
+
+  window._amm = { up: finalUpProb, dn: finalDnProb };
 }
 
 // ═══════════════════════════════════════════════════════
